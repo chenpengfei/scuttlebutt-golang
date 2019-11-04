@@ -26,6 +26,11 @@ cs.Link(ss)
 ss.Link(cs)
 ```
 
+## Run
+```
+make run
+```
+
 
 
 

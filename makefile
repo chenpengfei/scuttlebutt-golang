@@ -41,32 +41,12 @@ download:
 publish:
 	jfrog rt go-publish ${jfrog_repo_deployment} $(VERSION) --url=${jfrog_url} --user=${domain_username} --password=${domain_passward}
 
-
-# docker generates docker image for develop
-docker: generate
-	sh -c "'$(CURDIR)/scripts/docker/build.sh' $(VERSION)"
-
-# bin generates the releaseable binaries
-bin: generate
-	@TF_RELEASE=1 TF_DEV=true sh -c "'$(CURDIR)/scripts/build.sh'"
-
 # test runs the unit tests
 test: generate mock
 	go list $(TEST) | xargs -t -n4 go test $(TESTARGS) -timeout=2m -parallel=4
 
-jmeter:
-	rm -fr test/jmeter/report
-	jmeter -n -t jmeter/test.jmx -l jmeter/log.jtl -e -o jmeter/report
-
-# e2etest runs the end-to-end tests against a generated Terraform binary
-# The TF_ACC here allows network access, but does not require any special
-# credentials since the e2etests use local-only providers such as "null".
-e2etest: generate
-	TF_ACC=1 go test $(TESTARGS) -mod=vendor -v ./command/e2etest
-
-# testrace runs the race checker
-testrace: fmtcheck generate
-	TF_ACC= go test -mod=vendor -race $(TEST) $(TESTARGS)
+run:
+	go run cmd/app/main.go
 
 sonar: coverprofile
 	@sh -c "'$(CURDIR)/scripts/sonar.sh'"
