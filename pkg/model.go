@@ -5,14 +5,21 @@ import (
 	"time"
 )
 
-type Value struct {
-	Value     interface{} `json:"value"`
-	Timestamp time.Time   `json:"timestamp"`
-}
+const (
+	KeySpeed = "speed"
+)
 
+// Model 的操作不考虑“同步”
+// 同步由 Model 间 Stream 负责
+// 即业务和 IO 分离
 type Model struct {
 	Name string
 	storeMap map[string]Value
+}
+
+type Value struct {
+	Value     interface{} `json:"value"`
+	Timestamp time.Time   `json:"timestamp"`
 }
 
 func NewModel(name string) *Model {
@@ -33,6 +40,7 @@ func (m *Model) ApplyUpdates(update *Update) {
 			Value:     new.Value,
 			Timestamp: new.Timestamp,
 		}
+
 		log.WithField("node_name", m.Name).
 			WithField("key", new.Key).
 			WithField("value", new.Value).

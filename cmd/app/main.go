@@ -36,7 +36,7 @@ func main() {
 		counter++
 		ternarys := make([]*sb.Ternary, 1)
 		ternarys[0] = &sb.Ternary{
-			Key:       "speed",
+			Key:       sb.KeySpeed,
 			Value:     counter,
 			Timestamp: time.Now(),
 		}

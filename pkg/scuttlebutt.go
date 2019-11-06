@@ -3,9 +3,9 @@ package pkg
 import "time"
 
 const (
-	SbClose = iota
-	SbClock
+	SbClock = iota
 	SbUpdate
+	SbClose
 )
 
 // 流节点
@@ -33,7 +33,8 @@ type Update struct {
 type Protocol interface {
 	// 更新己方消息
 	ApplyUpdates(*Update)
-	// 根据对方的始终，计算 Delta
+	// 根据对端传来的 clock，计算出来的 delta。而 delta 是 update 是集合
+	// peerClock: 每个 stream 上记录对端传来的 clock，并且会随着后续从 stream 收到的 update 不断更新
 	History(peerClock time.Time) *Update
 }
 

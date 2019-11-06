@@ -15,4 +15,5 @@
 node_modules
 coverage
 .DS_Store
+issue.md
 
