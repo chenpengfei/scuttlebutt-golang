@@ -1,57 +1,30 @@
 package main
 
 import (
-	"context"
-	log "github.com/sirupsen/logrus"
-	"os"
-	sb "scuttlebutt-golang/pkg"
+	"scuttlebutt-golang/pkg/duplex"
+	"scuttlebutt-golang/pkg/model"
+	sb "scuttlebutt-golang/pkg/scuttlebutt"
 	"time"
 )
 
 func main() {
-	initLogWriterEarly()
-	ctx := context.Background()
+	InitLogWriterEarly()
 
-	cs := sb.NewStream(ctx, sb.Scuttlebutt{
-		Protocol: sb.NewModel("Client"),
-		Node: sb.Node{
-			ID:        "XXXX",
-			Timestamp: time.Now(),
-		},
+	a := model.NewSyncModel(sb.WithId("A"))
+	b := model.NewSyncModel(sb.WithId("B"))
+
+	sa := a.CreateStream(duplex.WithName("a->b"))
+	sb := b.CreateStream(duplex.WithName("b->a"))
+
+	a.Set("foo", "changed by A")
+
+	sb.On("synced", func(data interface{}) {
+		PrintKeyValue(b, "foo")
 	})
 
-	ss := sb.NewStream(ctx, sb.Scuttlebutt{
-		Protocol: sb.NewModel("Server"),
-		Node: sb.Node{
-			ID:        "YYYY",
-			Timestamp: time.Now(),
-		},
-	})
+	duplex.Link(sa, sb)
 
-	cs.Link(ss)
-	ss.Link(cs)
-
-	counter := 0
 	for {
-		counter++
-		ternarys := make([]*sb.Ternary, 1)
-		ternarys[0] = &sb.Ternary{
-			Key:       sb.KeySpeed,
-			Value:     counter,
-			Timestamp: time.Now(),
-		}
-		cs.ApplyUpdates(&sb.Update{Ternarys: ternarys})
 		time.Sleep(time.Second)
 	}
-}
-
-func initLogWriterEarly() {
-	log.SetOutput(os.Stdout)
-	log.SetLevel(log.DebugLevel)
-	formatter := log.TextFormatter{
-		DisableColors:   false,
-		FullTimestamp:   true,
-		TimestampFormat: "2006/01/02 15:04:05.000",
-	}
-	log.SetFormatter(&formatter)
 }

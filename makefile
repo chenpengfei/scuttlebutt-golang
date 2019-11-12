@@ -28,11 +28,9 @@ lint:
 	golangci-lint run ./...
 
 tools:
-	go get golang.org/x/tools/cmd/stringer
-	go get golang.org/x/tools/cmd/cover
-	go get github.com/golang/mock/mockgen
-	go get github.com/golang/lint
-	go install github.com/golang/lint
+#	go get golang.org/x/tools/cmd/stringer
+#	go get golang.org/x/tools/cmd/cover
+#	go get github.com/golang/mock/mockgen
 
 download:
 	go mod tidy
@@ -46,7 +44,7 @@ test: generate mock
 	go list $(TEST) | xargs -t -n4 go test $(TESTARGS) -timeout=2m -parallel=4
 
 run:
-	go run cmd/app/main.go
+	go run cmd/app/main.go cmd/app/utils.go
 
 sonar: coverprofile
 	@sh -c "'$(CURDIR)/scripts/sonar.sh'"
@@ -68,7 +66,7 @@ fmtcheck:
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
 
 # generate runs `go generate` to build the dynamically generated
-# source files, except the protobuf stubs which are built instead with
+# source files, except the protobuf stubs, which are built instead with
 # "make protobuf".
 generate: tools
 	GOFLAGS=-mod=vendor go generate ./...
