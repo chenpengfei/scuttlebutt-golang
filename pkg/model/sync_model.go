@@ -105,10 +105,9 @@ func (s *SyncModel) CreateSourceStream(opts ...duplex.Option) *duplex.Duplex {
 }
 
 func NewSyncModel(opts ...sb.Option) *SyncModel {
-	return &SyncModel{
-		store:       make(map[string]*sb.Update),
-		Scuttlebutt: sb.NewScuttlebutt(opts...),
-	}
+	model := &SyncModel{store: make(map[string]*sb.Update),}
+	model.Scuttlebutt = sb.NewScuttlebutt(model, opts...)
+	return model
 }
 
 var _ sb.Protocol = new(SyncModel)

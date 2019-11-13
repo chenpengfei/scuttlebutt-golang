@@ -62,9 +62,8 @@ type Duplex struct {
 	peerAccept  interface{}
 	peerId      sb.SourceId
 	meta        interface{}
+	log *logrus.Entry
 }
-
-var log *logrus.Entry
 
 func NewDuplex(sb *sb.Scuttlebutt, opts ...Option) *Duplex {
 	duplex := &Duplex{
@@ -92,7 +91,7 @@ func NewDuplex(sb *sb.Scuttlebutt, opts ...Option) *Duplex {
 		opt(duplex)
 	}
 
-	log = logger.WithNamespace(duplex.name)
+	duplex.log = logger.WithNamespace(duplex.name)
 
 	// Non-writable means we could skip receiving SYNC from peer
 	duplex.syncRecv = !duplex.writable
@@ -172,11 +171,11 @@ func (d *Duplex) getOutgoing() *Outgoing {
 // process any update ocurred on sb
 func (d *Duplex) onUpdate(data interface{}) {
 	update := data.(*sb.Update)
-	log.WithField("update", update).Debug("got 'update' on stream:")
+	d.log.WithField("update", update).Debug("got 'update' on stream:")
 
 	// current stream is in write-only mode
 	if !d.readable {
-		log.Debug("'update' ignored by its non-readable flag")
+		d.log.Debug("'update' ignored by its non-readable flag")
 		return
 	}
 
@@ -186,7 +185,7 @@ func (d *Duplex) onUpdate(data interface{}) {
 
 	// this update comes from our peer stream, don't send back
 	if update.From == d.peerId {
-		log.WithField("peerId", d.peerId).Debug("'update' ignored by peerId:")
+		d.log.WithField("peerId", d.peerId).Debug("'update' ignored by peerId:")
 		return
 	}
 
@@ -196,20 +195,20 @@ func (d *Duplex) onUpdate(data interface{}) {
 	}
 
 	if !isAccepted {
-		log.WithField("update", update).WithField("peerAccept", d.peerAccept).Debug("'update' ignored by peerAccept")
+		d.log.WithField("update", update).WithField("peerAccept", d.peerAccept).Debug("'update' ignored by peerAccept")
 		return
 	}
 
 	// send 'scuttlebutt' to peer
 	update.From = d.sb.Id
 	d.push(update, false)
-	log.WithField("update", update).Debug("'sent 'update to peer")
+	d.log.WithField("update", update).Debug("'sent 'update to peer")
 
 	// really, this should happen before emitting.
 	ts := update.Timestamp
 	source := update.SourceId
 	d.peerSources[source] = ts
-	log.WithField("peerSources", d.peerSources).Debug("updated peerSources to")
+	d.log.WithField("peerSources", d.peerSources).Debug("updated peerSources to")
 }
 
 func (d *Duplex) rawSource(abort pullstream.EndOrError, cb pullstream.SourceCallback) {
@@ -226,7 +225,7 @@ func (d *Duplex) rawSource(abort pullstream.EndOrError, cb pullstream.SourceCall
 		d.isFirstRead = false
 		outgoing := d.getOutgoing()
 		d.push(outgoing, true)
-		log.WithField("outgoing", outgoing).Debug("sent 'outgoing'")
+		d.log.WithField("outgoing", outgoing).Debug("sent 'outgoing'")
 	}
 
 	d.cb = cb
@@ -236,18 +235,18 @@ func (d *Duplex) rawSource(abort pullstream.EndOrError, cb pullstream.SourceCall
 func (d *Duplex) rawSink(read pullstream.Read) {
 	next := func(end pullstream.EndOrError, update interface{}) {
 		if end.End() {
-			log.WithField("peerId", d.peerId).Debug("sink ended by peer")
+			d.log.WithField("peerId", d.peerId).Debug("sink ended by peer")
 			d.end(end)
 			return
 		}
 
 		if end.Error() {
-			log.Debug("sink reading errors")
+			d.log.Debug("sink reading errors")
 			d.end(end)
 			return
 		}
 
-		log.WithField("update", update).WithField("peerId", d.peerId).Debug("sink reads data from peer")
+		d.log.WithField("update", update).WithField("peerId", d.peerId).Debug("sink reads data from peer")
 		if v, ok := update.(*sb.Update); ok {
 			if !d.writable {
 				return
@@ -258,17 +257,18 @@ func (d *Duplex) rawSink(read pullstream.Read) {
 		} else if v, ok := update.(string); ok {
 			cmd := v
 			if "SYNC" == cmd {
-				log.Info("SYNC received")
+				d.log.Info("SYNC received")
 				d.syncRecv = true
 				d.sb.Emit("syncReceived", nil)
 				if d.syncSent {
-					log.Info("emit synced")
+					d.log.Info("emit synced")
 					d.sb.Emit("synced", nil)
 				}
 			}
 		} else {
 			// it's a scuttlebutt digest(vector clocks) when clock is an object.
-			//todo
+			//qa. self.start(update).then(() => {
+			d.start(update)
 		}
 	}
 	read(d.abort, next)
@@ -330,7 +330,7 @@ func (d *Duplex) end(data interface{}) {
 }
 
 func (d *Duplex) start(data interface{}) {
-	log.WithField("data", data).Info("start")
+	d.log.WithField("data", data).Info("start")
 	if incoming, ok := data.(*Outgoing); ok {
 		d.peerSources = incoming.clock
 		d.peerId = incoming.id
@@ -339,7 +339,7 @@ func (d *Duplex) start(data interface{}) {
 		rest := func() {
 			d.push("SYNC", false)
 			d.syncSent = true
-			log.WithField("peerId", d.peerId).Debug("sent 'SYNC' to peer")
+			d.log.WithField("peerId", d.peerId).Debug("sent 'SYNC' to peer")
 
 			// when we have sent all history
 			d.Emit("header", incoming)
@@ -363,12 +363,13 @@ func (d *Duplex) start(data interface{}) {
 
 		// call this.history to calculate the delta between peers
 		// AsyncScuttlebutt
-		history := d.sb.History(d.peerSources)
+		history := d.sb.Protocol.History(d.peerSources)
 		for _, h := range history {
 			h.From = d.sb.Id
 			d.push(h, false)
-			log.WithField("peerId", d.peerId).WithField("history", h).Debug("sent history")
+			d.log.WithField("peerId", d.peerId).WithField("history", h).Debug("sent history")
 			d.sb.On("_update", d.onUpdate)
+			//qa. sent history 此时应该是等 'SYNC'.
 			rest()
 		}
 	} else {

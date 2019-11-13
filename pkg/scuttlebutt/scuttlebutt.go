@@ -55,12 +55,13 @@ type Scuttlebutt struct {
 	verify   Verify
 	createId CreateIdFn
 	Streams  int
+
+	log *logrus.Entry
 }
 
-var log *logrus.Entry
-
-func NewScuttlebutt(opts ...Option) *Scuttlebutt {
+func NewScuttlebutt(protocol Protocol, opts ...Option) *Scuttlebutt {
 	sb := &Scuttlebutt{
+		Protocol: protocol,
 		Sources: make(map[SourceId]Timestamp),
 		Event:   event.NewEvent(),
 	}
@@ -84,7 +85,7 @@ func NewScuttlebutt(opts ...Option) *Scuttlebutt {
 		opt(sb)
 	}
 
-	log = logger.WithNamespace(string(sb.Id))
+	sb.log = logger.WithNamespace(string(sb.Id))
 
 	return sb
 }
@@ -105,20 +106,20 @@ func (sb *Scuttlebutt) History(peerSources Sources) []*Update {
 
 // localUpdate 和 history 会触发 Update
 func (sb *Scuttlebutt) Update(update *Update) bool {
-	log.WithField("data", update.Data).Info("update")
+	sb.log.WithField("data", update.Data).Info("update")
 
 	ts := update.Timestamp
 	sourceId := update.SourceId
 	latest := sb.Sources[sourceId]
 
 	if latest >= ts {
-		log.WithField("latest", latest).WithField("ts", ts).WithField("diff", latest-ts).Debug("Update is older, ignore it")
+		sb.log.WithField("latest", latest).WithField("ts", ts).WithField("diff", latest-ts).Debug("Update is older, ignore it")
 		sb.Emit("old_data", update)
 		return false
 	}
 
 	sb.Sources[sourceId] = ts
-	log.WithField("sources", sb.Sources).Debug("update our sources to")
+	sb.log.WithField("sources", sb.Sources).Debug("update our sources to")
 
 	if sourceId != sb.Id {
 		if sb.verify != nil {
@@ -144,17 +145,17 @@ func (sb *Scuttlebutt) didVerification(verified bool, update *Update) bool {
 	// not an error. if its genuine error, really you should queue and.
 	// try again? or replay the message later.
 	// -- this should be done my the security plugin though, not scuttlebutt.
-	if sb.verify == nil {
+	if !verified {
 		sb.Emit("unverified_data", update)
 		return false
 	}
 
 	// emit '_update' event to notify every streams on this SB
 	//todo.异步 ？
-	r := sb.ApplyUpdates(update)
+	r := sb.Protocol.ApplyUpdates(update)
 	if r {
 		sb.Emit("_update", update)
-		log.Debug("applied 'update' and fired ⚡_update")
+		sb.log.Debug("applied 'update' and fired ⚡_update")
 	}
 	return r
 }
