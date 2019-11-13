@@ -30,7 +30,7 @@ func InitLogWriterEarly() {
 		DisableColors:   false,
 		FullTimestamp:   true,
 		TimestampFormat: LayoutShortMillisecond,
-		DisableSorting: false,
+		DisableSorting:  false,
 		SortingFunc: func(strings []string) {
 			sort.Slice(strings, func(i, j int) bool {
 				if strings[i] == NamespaceFieldKey {

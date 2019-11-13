@@ -7,18 +7,18 @@
 
 ```
 a := model.NewSyncModel(sb.WithId("A"))
-	b := model.NewSyncModel(sb.WithId("B"))
+b := model.NewSyncModel(sb.WithId("B"))
 
-	sa := a.CreateStream(duplex.WithName("a->b"))
-	sb := b.CreateStream(duplex.WithName("b->a"))
+sa := a.CreateStream(duplex.WithName("a->b"))
+sb := b.CreateStream(duplex.WithName("b->a"))
 
-	a.Set("foo", "changed by A")
+a.Set("foo", "changed by A")
 
-	sb.On("synced", func(data interface{}) {
-		PrintKeyValue(b, "foo")
-	})
+sb.On("synced", func(data interface{}) {
+    PrintKeyValue(b, "foo")
+})
 
-	duplex.Link(sa, sb)
+duplex.Link(sa, sb)
 ```
 
 ## Run

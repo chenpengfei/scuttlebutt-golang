@@ -62,7 +62,7 @@ type Duplex struct {
 	peerAccept  interface{}
 	peerId      sb.SourceId
 	meta        interface{}
-	log *logrus.Entry
+	log         *logrus.Entry
 }
 
 func NewDuplex(sb *sb.Scuttlebutt, opts ...Option) *Duplex {
@@ -73,8 +73,8 @@ func NewDuplex(sb *sb.Scuttlebutt, opts ...Option) *Duplex {
 		wrapper:     "json",
 		readable:    true,
 		writable:    true,
-		ended:       "",
-		abort:       "",
+		ended:       pullstream.Null,
+		abort:       pullstream.Null,
 		syncSent:    false,
 		syncRecv:    false,
 		buffer:      queue.New(),
@@ -233,7 +233,8 @@ func (d *Duplex) rawSource(abort pullstream.EndOrError, cb pullstream.SourceCall
 }
 
 func (d *Duplex) rawSink(read pullstream.Read) {
-	next := func(end pullstream.EndOrError, update interface{}) {
+	var next pullstream.SourceCallback
+	next = func(end pullstream.EndOrError, update interface{}) {
 		if end.End() {
 			d.log.WithField("peerId", d.peerId).Debug("sink ended by peer")
 			d.end(end)
@@ -270,8 +271,16 @@ func (d *Duplex) rawSink(read pullstream.Read) {
 			//qa. self.start(update).then(() => {
 			d.start(update)
 		}
+		read(d.endOrError(), next)
 	}
-	read(d.abort, next)
+	read(d.endOrError(), next)
+}
+
+func (d *Duplex) endOrError() pullstream.EndOrError {
+	if d.ended.Yes() {
+		return d.ended
+	}
+	return d.abort
 }
 
 func (d *Duplex) GetSource() pullstream.Read {
@@ -369,7 +378,7 @@ func (d *Duplex) start(data interface{}) {
 			d.push(h, false)
 			d.log.WithField("peerId", d.peerId).WithField("history", h).Debug("sent history")
 			d.sb.On("_update", d.onUpdate)
-			//qa. sent history 此时应该是等 'SYNC'.
+			//qa. sent history 此时应该是等对方发送 'SYNC'.
 			rest()
 		}
 	} else {

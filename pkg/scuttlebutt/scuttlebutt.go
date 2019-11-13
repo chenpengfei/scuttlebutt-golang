@@ -62,8 +62,8 @@ type Scuttlebutt struct {
 func NewScuttlebutt(protocol Protocol, opts ...Option) *Scuttlebutt {
 	sb := &Scuttlebutt{
 		Protocol: protocol,
-		Sources: make(map[SourceId]Timestamp),
-		Event:   event.NewEvent(),
+		Sources:  make(map[SourceId]Timestamp),
+		Event:    event.NewEvent(),
 	}
 
 	for _, opt := range opts {

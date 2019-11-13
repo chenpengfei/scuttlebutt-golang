@@ -44,7 +44,7 @@ test: generate mock
 	go list $(TEST) | xargs -t -n4 go test $(TESTARGS) -timeout=2m -parallel=4
 
 run:
-	go run cmd/app/main.go cmd/app/utils.go
+	go run examples/scuttlebutt/main.go
 
 sonar: coverprofile
 	@sh -c "'$(CURDIR)/scripts/sonar.sh'"
