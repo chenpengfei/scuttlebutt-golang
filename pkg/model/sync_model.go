@@ -1,8 +1,8 @@
 package model
 
 import (
-	log "github.com/sirupsen/logrus"
 	"scuttlebutt-golang/pkg/duplex"
+	log "scuttlebutt-golang/pkg/logger"
 	sb "scuttlebutt-golang/pkg/scuttlebutt"
 )
 
@@ -43,6 +43,7 @@ func (s *SyncModel) ApplyUpdates(update *sb.Update) bool {
 	}
 
 	s.store[key] = update
+	//qa. this.emit.apply(this, ['update', update])
 	s.Emit("update", update)
 	s.Emit("changed:"+key, update.Data.(*ValueModel).V)
 

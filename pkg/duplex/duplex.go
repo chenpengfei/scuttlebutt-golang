@@ -4,7 +4,7 @@ import (
 	"github.com/eapache/queue"
 	"github.com/sirupsen/logrus"
 	"scuttlebutt-golang/pkg/event"
-	logger "scuttlebutt-golang/pkg/log"
+	"scuttlebutt-golang/pkg/logger"
 	pullstream "scuttlebutt-golang/pkg/pull-stream"
 	sb "scuttlebutt-golang/pkg/scuttlebutt"
 )
@@ -64,7 +64,7 @@ type Duplex struct {
 	meta        interface{}
 }
 
-var log *logrus.Logger
+var log *logrus.Entry
 
 func NewDuplex(sb *sb.Scuttlebutt, opts ...Option) *Duplex {
 	duplex := &Duplex{
@@ -92,7 +92,7 @@ func NewDuplex(sb *sb.Scuttlebutt, opts ...Option) *Duplex {
 		opt(duplex)
 	}
 
-	log = logger.Namespace(duplex.name)
+	log = logger.WithNamespace(duplex.name)
 
 	// Non-writable means we could skip receiving SYNC from peer
 	duplex.syncRecv = !duplex.writable

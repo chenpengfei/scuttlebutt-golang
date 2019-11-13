@@ -3,7 +3,7 @@ package scuttlebutt
 import (
 	"github.com/sirupsen/logrus"
 	"scuttlebutt-golang/pkg/event"
-	logger "scuttlebutt-golang/pkg/log"
+	"scuttlebutt-golang/pkg/logger"
 	"time"
 )
 
@@ -57,7 +57,7 @@ type Scuttlebutt struct {
 	Streams  int
 }
 
-var log *logrus.Logger
+var log *logrus.Entry
 
 func NewScuttlebutt(opts ...Option) *Scuttlebutt {
 	sb := &Scuttlebutt{
@@ -80,7 +80,11 @@ func NewScuttlebutt(opts ...Option) *Scuttlebutt {
 		sb.Id = CreateId()
 	}
 
-	log = logger.Namespace(string(sb.Id))
+	for _, opt := range opts {
+		opt(sb)
+	}
+
+	log = logger.WithNamespace(string(sb.Id))
 
 	return sb
 }
@@ -101,7 +105,7 @@ func (sb *Scuttlebutt) History(peerSources Sources) []*Update {
 
 // localUpdate 和 history 会触发 Update
 func (sb *Scuttlebutt) Update(update *Update) bool {
-	log.WithField("Update", update).Info("Update")
+	log.WithField("data", update.Data).Info("update")
 
 	ts := update.Timestamp
 	sourceId := update.SourceId
@@ -114,7 +118,7 @@ func (sb *Scuttlebutt) Update(update *Update) bool {
 	}
 
 	sb.Sources[sourceId] = ts
-	log.WithField("sources", sb.Sources).Debug("Update our sources to")
+	log.WithField("sources", sb.Sources).Debug("update our sources to")
 
 	if sourceId != sb.Id {
 		if sb.verify != nil {

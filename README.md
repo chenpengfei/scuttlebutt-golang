@@ -6,26 +6,19 @@
 ## Usage
 
 ```
-ctx := context.Background()
+a := model.NewSyncModel(sb.WithId("A"))
+	b := model.NewSyncModel(sb.WithId("B"))
 
-cs := sb.NewStream(ctx, sb.Scuttlebutt{
-    Protocol: sb.NewModel("Client"),
-    Node: sb.Node{
-        ID:        "XXXX",
-        Timestamp: time.Now(),
-    },
-})
+	sa := a.CreateStream(duplex.WithName("a->b"))
+	sb := b.CreateStream(duplex.WithName("b->a"))
 
-ss := sb.NewStream(ctx, sb.Scuttlebutt{
-    Protocol: sb.NewModel("Server"),
-    Node: sb.Node{
-        ID:        "YYYY",
-        Timestamp: time.Now(),
-    },
-})
+	a.Set("foo", "changed by A")
 
-cs.Link(ss)
-ss.Link(cs)
+	sb.On("synced", func(data interface{}) {
+		PrintKeyValue(b, "foo")
+	})
+
+	duplex.Link(sa, sb)
 ```
 
 ## Run

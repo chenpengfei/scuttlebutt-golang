@@ -8,8 +8,6 @@ import (
 )
 
 func main() {
-	InitLogWriterEarly()
-
 	a := model.NewSyncModel(sb.WithId("A"))
 	b := model.NewSyncModel(sb.WithId("B"))
 
