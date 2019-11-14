@@ -8,13 +8,13 @@ import (
 func TestEmit(t *testing.T) {
 	event := NewEvent()
 	total1 := 0
-	event.On("_update", func(opts ...interface{}) {
-		total1 = total1 + opts[0].(int)
+	event.On("_update", func(data interface{}) {
+		total1 = total1 + data.(int)
 	})
 
 	total2 := 0
-	event.On("_update", func(opts ...interface{}) {
-		total2 = total2 + opts[0].(int)
+	event.On("_update", func(data interface{}) {
+		total2 = total2 + data.(int)
 	})
 
 	type user struct {
@@ -22,8 +22,8 @@ func TestEmit(t *testing.T) {
 		Age  int
 	}
 	counter := 0
-	event.On("_user", func(opts ...interface{}) {
-		user := opts[0].(user)
+	event.On("_user", func(data interface{}) {
+		user := data.(user)
 		assert.Equal(t, "Alice", user.Name)
 		assert.Equal(t, 3, user.Age)
 		counter++

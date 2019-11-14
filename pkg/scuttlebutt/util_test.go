@@ -27,13 +27,11 @@ func TestFilter(t *testing.T) {
 		Timestamp: 2,
 	}
 
-	assert.True(t, Filter(u1, nil))
-
-	s1 := &Sources{Map: nil}
+	s1 := make(Sources)
 	assert.True(t, Filter(u1, s1))
 
-	s2 := &Sources{Map: make(map[SourceId]Timestamp)}
-	s2.Map[u21.SourceId] = u21.Timestamp
+	s2 := make(Sources)
+	s2[u21.SourceId] = u21.Timestamp
 	assert.True(t, Filter(u1, s2))
 	assert.True(t, Filter(u22, s2))
 }

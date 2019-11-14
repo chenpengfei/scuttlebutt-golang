@@ -1,0 +1,17 @@
+language: golang
+
+cache:
+	directories:
+		- ~/.go
+
+branches:
+	only:
+		- master
+
+notifications:
+	email:
+		- langyu0826@gmail.com
+
+script:
+	- make test
+

@@ -12,15 +12,24 @@ func BenchmarkRandomWrong(b *testing.B)  {
 	}
 }
 
-func BenchmarkRandomFor(b *testing.B)  {
-	for n := 0; n < b.N; n++ {
-		loggerFor(createRandomStream(num))
-	}
-}
-
 func BenchmarkRandomGo(b *testing.B)  {
 	for n := 0; n < b.N; n++ {
 		loggerGo(createRandomStream(num))
 	}
 	WG.Wait()
 }
+
+func BenchmarkRandomForWaitGroup(b *testing.B)  {
+	for n := 0; n < b.N; n++ {
+		loggerForWaitGroup(createRandomStream(num))
+	}
+}
+
+func BenchmarkRandomForChannel(b *testing.B)  {
+	for n := 0; n < b.N; n++ {
+		loggerForChannel(createRandomStream(num))
+	}
+}
+
+
+

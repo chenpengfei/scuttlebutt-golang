@@ -39,11 +39,9 @@ func dealData(n interface{}) string {
 }
 
 func loggerWrong(read pullstream.Read) {
-	WG.Add(1)
 	var next func(pullstream.EndOrError, interface{})
 	next = func(end pullstream.EndOrError, data interface{}) {
 		if end.Yes() {
-			WG.Done()
 			return
 		}
 
@@ -70,7 +68,32 @@ func loggerGo(read pullstream.Read) {
 	read(pullstream.Null, next)
 }
 
-func loggerFor(read pullstream.Read) {
+func loggerForChannel(read pullstream.Read) {
+	var c = make(chan struct{}, 1)
+	var next func(pullstream.EndOrError, interface{})
+	next = func(end pullstream.EndOrError, data interface{}) {
+		if end.Yes() {
+			close(c)
+			return
+		}
+
+		result = dealData(data)
+		c <- struct{}{}
+	}
+
+	c <- struct{}{}
+	for  {
+		select {
+		case _, ok := <- c:
+			if !ok {
+				return
+			}
+			read(pullstream.Null, next)
+		}
+	}
+}
+
+func loggerForWaitGroup(read pullstream.Read) {
 	var wg sync.WaitGroup
 	over := false
 	for  {
@@ -91,4 +114,3 @@ func loggerFor(read pullstream.Read) {
 		}
 	}
 }
-

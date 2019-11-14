@@ -23,7 +23,7 @@ func CreateId() SourceId {
 
 func Filter(update *Update, sources Sources) bool {
 	// Update in local store
-	if sources == nil || sources == nil {
+	if sources == nil {
 		return true
 	}
 	v, found := sources[update.SourceId]

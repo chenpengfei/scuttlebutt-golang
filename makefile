@@ -19,10 +19,6 @@ install:
 	# This allows us to add git hooks directly into our package.json via the husky.hooks field
 	npm install --save-dev husky
 
-commit:
-	git add .
-	npm run commit
-
 lint:
 	golint ./...
 	golangci-lint run ./...
@@ -36,9 +32,6 @@ download:
 	go mod tidy
 	go mod download
 
-publish:
-	jfrog rt go-publish ${jfrog_repo_deployment} $(VERSION) --url=${jfrog_url} --user=${domain_username} --password=${domain_passward}
-
 # test runs the unit tests
 test: generate mock
 	go list $(TEST) | xargs -t -n4 go test $(TESTARGS) -timeout=2m -parallel=4
@@ -48,9 +41,6 @@ run:
 
 benchmark:
 	go test -bench=. examples/pull-stream/random_test.go examples/pull-stream/random.go
-
-sonar: coverprofile
-	@sh -c "'$(CURDIR)/scripts/sonar.sh'"
 
 cover: coverprofile
 	go tool cover -html=coverage.out
@@ -74,21 +64,14 @@ fmtcheck:
 generate: tools
 	GOFLAGS=-mod=vendor go generate ./...
 
-swagger:
-	swag init --g ./internal/app/server/server.go -o ./api/swagger
-
 # mock runs `mockgen` to generate mock interfaces from source file
 mock:
 	@sh -c "'$(CURDIR)/scripts/mock.sh'"
-
-clean:
-	rm -fr bin
-	rm jmeter.log
 
 # disallow any parallelism (-j) for Make. This is necessary since some
 # commands during the build process create temporary files that collide
 # under parallel conditions.
 .NOTPARALLEL:
 
-.PHONY: build vendor bin cover default e2etest fmt fmtcheck generate test testacc testrace tools website
+.PHONY: default
 
