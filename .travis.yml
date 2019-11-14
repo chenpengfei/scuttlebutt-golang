@@ -1,6 +1,6 @@
 # use the latest ubuntu environment (18.04) available on travis
 dist: xenial
-
+sudo: true
 language: go
 
 # Force-enable Go modules. Also force go to use the code in vendor/

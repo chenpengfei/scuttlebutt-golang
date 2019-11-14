@@ -1,7 +1,6 @@
 # Scuttlebutt Golang 
 [![Build Status](https://travis-ci.org/chenpengfei/scuttlebutt-golang.svg)](https://travis-ci.org/chenpengfei/scuttlebutt-golang)
 [![Coverage Status](https://coveralls.io/repos/github/chenpengfei/scuttlebutt-golang/badge.svg)](https://coveralls.io/github/chenpengfei/scuttlebutt-golang)
-[![npm](https://img.shields.io/npm/v/@chenpengfei/scuttlebutt-golang.svg)](https://www.npmjs.com/package/@chenpengfei/scuttlebutt-golang/)
 
 
 尝试解决两个一致性问题
