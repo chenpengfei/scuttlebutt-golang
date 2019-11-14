@@ -65,6 +65,8 @@ type Duplex struct {
 	log         *logrus.Entry
 }
 
+// Sink (reader or writable stream that consumes values)
+// Source (readable stream that produces values)
 func NewDuplex(sb *sb.Scuttlebutt, opts ...Option) *Duplex {
 	duplex := &Duplex{
 		sb:          sb,
@@ -111,7 +113,7 @@ func (d *Duplex) onClose() {
 	d.sb.RemoveListener("_update", d.onUpdate)
 	d.sb.RemoveListener("dispose", d.end)
 	d.sb.Streams--
-	d.sb.Emit("unstream", d.sb.Streams)
+	d.Emit("unstream", d.sb.Streams)
 }
 
 func (d *Duplex) drain() {
@@ -260,10 +262,10 @@ func (d *Duplex) rawSink(read pullstream.Read) {
 			if "SYNC" == cmd {
 				d.log.Info("SYNC received")
 				d.syncRecv = true
-				d.sb.Emit("syncReceived", nil)
+				d.Emit("syncReceived", nil)
 				if d.syncSent {
 					d.log.Info("emit synced")
-					d.sb.Emit("synced", nil)
+					d.Emit("synced", nil)
 				}
 			}
 		} else {
@@ -377,10 +379,10 @@ func (d *Duplex) start(data interface{}) {
 			h.From = d.sb.Id
 			d.push(h, false)
 			d.log.WithField("peerId", d.peerId).WithField("history", h).Debug("sent history")
-			d.sb.On("_update", d.onUpdate)
-			//qa. sent history 此时应该是等对方发送 'SYNC'.
-			rest()
 		}
+		d.sb.On("_update", d.onUpdate)
+		//qa. sent history 此时应该是等对方发送 'SYNC'.
+		rest()
 	} else {
 		d.Emit("error", nil)
 		d.end(pullstream.Err)

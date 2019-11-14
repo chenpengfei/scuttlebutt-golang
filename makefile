@@ -46,6 +46,9 @@ test: generate mock
 run:
 	go run examples/scuttlebutt/main.go
 
+benchmark:
+	go test -bench=. examples/pull-stream/random_test.go examples/pull-stream/random.go
+
 sonar: coverprofile
 	@sh -c "'$(CURDIR)/scripts/sonar.sh'"
 

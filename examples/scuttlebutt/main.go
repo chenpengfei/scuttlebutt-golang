@@ -5,7 +5,6 @@ import (
 	log "scuttlebutt-golang/pkg/logger"
 	"scuttlebutt-golang/pkg/model"
 	sb "scuttlebutt-golang/pkg/scuttlebutt"
-	"time"
 )
 
 func main() {
@@ -22,14 +21,10 @@ func main() {
 	})
 
 	duplex.Link(sa, sb)
-
-	for {
-		time.Sleep(time.Second)
-	}
 }
 
 func printKeyValue(model *model.SyncModel, key string) {
-	log.WithField("id", model.Id()).WithField("value", model.Get(key, false)).Info("With clock")
-	log.WithField("id", model.Id()).WithField("value", model.Get(key, true)).Info("With no clock")
+	log.WithField("id", model.Id()).WithField("value", model.Get(key, false)).Info("with clock")
+	log.WithField("id", model.Id()).WithField("value", model.Get(key, true)).Info("with no clock")
 
 }
