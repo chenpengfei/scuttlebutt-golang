@@ -10,13 +10,6 @@
         "husky": "^3.0.9",
         "validate-commit-msg": "^2.14.0"
     },
-    "husky": {
-        "hooks": {
-            "pre-commit": "make test && make fmt && git add .",
-            "prepare-commit-msg": "exec < /dev/tty && git cz --hook || true",
-            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-        }
-    },
     "config": {
         "commitizen": {
             "path": "./node_modules/cz-conventional-changelog"

@@ -32,7 +32,7 @@ var result string
 
 func dealData(n interface{}) string {
 	if d, ok := n.(int); ok {
-		return strconv.Itoa((d*d*d+d)/(d+1))
+		return strconv.Itoa((d*d*d + d) / (d + 1))
 	} else {
 		return ""
 	}
@@ -52,6 +52,7 @@ func loggerWrong(read pullstream.Read) {
 }
 
 var WG sync.WaitGroup
+
 // logger reads a source and logs it.
 func loggerGo(read pullstream.Read) {
 	WG.Add(1)
@@ -69,26 +70,23 @@ func loggerGo(read pullstream.Read) {
 }
 
 func loggerForChannel(read pullstream.Read) {
-	var c = make(chan struct{}, 1)
-	var next func(pullstream.EndOrError, interface{})
-	next = func(end pullstream.EndOrError, data interface{}) {
-		if end.Yes() {
-			close(c)
-			return
-		}
-
-		result = dealData(data)
-		c <- struct{}{}
-	}
-
+	c := make(chan struct{}, 1)
 	c <- struct{}{}
-	for  {
+	for {
 		select {
-		case _, ok := <- c:
+		case _, ok := <-c:
 			if !ok {
 				return
 			}
-			read(pullstream.Null, next)
+			read(pullstream.Null, func(end pullstream.EndOrError, data interface{}) {
+				if end.Yes() {
+					close(c)
+					return
+				}
+
+				result = dealData(data)
+				c <- struct{}{}
+			})
 		}
 	}
 }
@@ -96,7 +94,7 @@ func loggerForChannel(read pullstream.Read) {
 func loggerForWaitGroup(read pullstream.Read) {
 	var wg sync.WaitGroup
 	over := false
-	for  {
+	for {
 		wg.Add(1)
 		read(pullstream.Null, func(end pullstream.EndOrError, data interface{}) {
 			if end.Yes() {

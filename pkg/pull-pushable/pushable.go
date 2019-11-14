@@ -4,13 +4,7 @@ import (
 	"github.com/eapache/queue"
 	"github.com/sirupsen/logrus"
 	pullstream "scuttlebutt-golang/pkg/pull-stream"
-	"strconv"
 )
-
-var getPushableName = func() func() string {
-	counter := 1
-	return func() string { return strconv.Itoa(counter) }
-}()
 
 var buffer *queue.Queue
 

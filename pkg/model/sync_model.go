@@ -84,7 +84,7 @@ func (s *SyncModel) Get(k string, withClock bool) interface{} {
 
 func (s *SyncModel) Keys() []string {
 	slice := make([]string, 0)
-	for k, _ := range s.store {
+	for k := range s.store {
 		if s.Get(k, false) != nil {
 			slice = append(slice, k)
 		}

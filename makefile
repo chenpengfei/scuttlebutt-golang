@@ -5,7 +5,7 @@ TEST?=./...
 GOFMT_FILES?=$$(find . -name '*.go' | grep -v vendor)
 TESTARGS?=-gcflags=-l
 
-default: install
+default: test
 
 install:
 	# Install and run Commitizen locally
@@ -19,10 +19,6 @@ install:
 	# This allows us to add git hooks directly into our package.json via the husky.hooks field
 	npm install --save-dev husky
 
-lint:
-	golint ./...
-	golangci-lint run ./...
-
 tools:
 #	go get golang.org/x/tools/cmd/stringer
 #	go get golang.org/x/tools/cmd/cover
@@ -32,25 +28,27 @@ download:
 	go mod tidy
 	go mod download
 
-# test runs the unit tests
-test: generate mock
-	go list $(TEST) | xargs -t -n4 go test $(TESTARGS) -timeout=2m -parallel=4
-
 run:
 	go run examples/scuttlebutt/main.go
 
 benchmark:
 	go test -bench=. examples/pull-stream/random_test.go examples/pull-stream/random.go
 
-cover: coverprofile
-	go tool cover -html=coverage.out
-	rm coverage.out
+lint:
+	golangci-lint run ./...
+
+test: generate mock
+	go list $(TEST) | xargs -t -n4 go test -race $(TESTARGS) -timeout=2m -parallel=4
 
 coverprofile: mock
 	@go tool cover 2>/dev/null; if [ $$? -eq 3 ]; then \
 		go get -u golang.org/x/tools/cmd/cover; \
 	fi
-	go test $(TEST) $(TESTARGS) -coverprofile=coverage.out
+	go test -race $(TEST) $(TESTARGS) -coverprofile=coverage.txt -covermode=atomic
+
+cover: coverprofile
+	go tool cover -html=coverage.txt
+	rm coverage.txt
 
 fmt:
 	gofmt -w $(GOFMT_FILES)
