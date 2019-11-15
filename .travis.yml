@@ -22,6 +22,9 @@ notifications:
 	email:
 		- langyu0826@gmail.com
 
+before_install:
+	- gem install bundler
+
 # Anything in before_script that returns a nonzero exit code will flunk the
 # build and immediately stop. It's sorta like having set -e enabled in bash.
 # Make sure you've pinned the version of golangci-lint by running this command
