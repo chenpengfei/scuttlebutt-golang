@@ -1,5 +1,13 @@
 # Scuttlebutt Golang 
+# Travis CI for the master branch
 [![Build Status](https://travis-ci.com/chenpengfei/scuttlebutt-golang.svg?branch=master)](https://travis-ci.com/chenpengfei/scuttlebutt-golang)
+# Note that this is for the MIT license, and it expects a LICENSE.md file
+[![Software License](https://img.shields.io/badge/License-MIT-orange.svg?style=flat-square)](https://github.com/vendor/package/blob/master/LICENSE.md)
+# Link to GoDoc
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/vendor/package)
+# Codecov for the master branch
+[![Coverage Status](http://codecov.io/github.com/chenpengfei/scuttlebutt-golang/coverage.svg?branch=master)](http://codecov.io/github.com/chenpengfei/scuttlebutt-golang?branch=master)
+
 
 尝试解决两个一致性问题
 1. 最终一致性问题中的 “最终结果同步”，用一个分布式 "HashMap" 解决
