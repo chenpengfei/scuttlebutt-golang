@@ -1,7 +1,5 @@
 # Scuttlebutt Golang 
-[![Build Status](https://travis-ci.org/chenpengfei/scuttlebutt-golang.svg)](https://travis-ci.org/chenpengfei/scuttlebutt-golang)
-[![Coverage Status](https://coveralls.io/repos/github/chenpengfei/scuttlebutt-golang/badge.svg)](https://coveralls.io/github/chenpengfei/scuttlebutt-golang)
-
+[![Build Status](https://travis-ci.com/chenpengfei/scuttlebutt-golang.svg?branch=master)](https://travis-ci.com/chenpengfei/scuttlebutt-golang)
 
 尝试解决两个一致性问题
 1. 最终一致性问题中的 “最终结果同步”，用一个分布式 "HashMap" 解决
