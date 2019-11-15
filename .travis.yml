@@ -1,6 +1,4 @@
 # use the latest ubuntu environment (18.04) available on travis
-dist: xenial
-sudo: true
 language: go
 
 # Force-enable Go modules. Also force go to use the code in vendor/
@@ -10,7 +8,7 @@ env: GO111MODULE=on
 # You don't need to test on very old versions of the Go compiler. It's the user's
 # responsibility to keep their compiler up to date.
 go:
-	- 1.13.x
+	- 1.12.x
 	- master
 
 # Only clone the most recent commit.
@@ -21,9 +19,6 @@ git:
 notifications:
 	email:
 		- langyu0826@gmail.com
-
-before_install:
-	- gem install bundler
 
 # Anything in before_script that returns a nonzero exit code will flunk the
 # build and immediately stop. It's sorta like having set -e enabled in bash.
