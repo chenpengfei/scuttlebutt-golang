@@ -26,5 +26,4 @@ func main() {
 func printKeyValue(model *model.SyncModel, key string) {
 	log.WithField("id", model.Id()).WithField("value", model.Get(key, false)).Info("with clock")
 	log.WithField("id", model.Id()).WithField("value", model.Get(key, true)).Info("with no clock")
-
 }

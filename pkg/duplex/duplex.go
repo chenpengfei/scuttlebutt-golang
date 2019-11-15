@@ -103,17 +103,17 @@ func NewDuplex(sb *sb.Scuttlebutt, opts ...Option) *Duplex {
 
 	duplex.sb = sb
 
+	duplex.onclose = func(err pullstream.EndOrError) {
+		duplex.sb.RemoveListener("_update", duplex.onUpdate)
+		duplex.sb.RemoveListener("dispose", duplex.end)
+		duplex.sb.Streams--
+		duplex.Emit("unstream", duplex.sb.Streams)
+	}
+
 	sb.Streams++
 	sb.On("dispose", duplex.end)
 
 	return duplex
-}
-
-func (d *Duplex) onClose() {
-	d.sb.RemoveListener("_update", d.onUpdate)
-	d.sb.RemoveListener("dispose", d.end)
-	d.sb.Streams--
-	d.Emit("unstream", d.sb.Streams)
 }
 
 func (d *Duplex) drain() {
@@ -121,9 +121,8 @@ func (d *Duplex) drain() {
 		// there is no downstream waiting for callback
 		if d.ended.Yes() && d.onclose != nil {
 			// perform _onclose regardless of whether there is data in the cache
-			c := d.onclose
-			c = nil
-			c(d.ended)
+			d.onclose(d.ended)
+			d.onclose = nil
 		}
 		return
 	}

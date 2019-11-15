@@ -96,12 +96,10 @@ func (sb *Scuttlebutt) IsAccepted(peerAccept interface{}, update *Update) bool {
 
 func (sb *Scuttlebutt) ApplyUpdates(update *Update) bool {
 	panic("method(applyUpdate) must be implemented")
-	return false
 }
 
 func (sb *Scuttlebutt) History(peerSources Sources) []*Update {
 	panic("method(history) must be implemented")
-	return []*Update{}
 }
 
 // localUpdate 和 history 会触发 Update
@@ -169,6 +167,7 @@ func (sb *Scuttlebutt) LocalUpdate(any interface{}) {
 }
 
 // each stream will be ended due to this event
-func (sb *Scuttlebutt) dispose() {
-	sb.Emit("dispose", nil)
-}
+//todo
+//func (sb *Scuttlebutt) dispose() {
+//	sb.Emit("dispose", nil)
+//}

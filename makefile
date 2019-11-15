@@ -5,7 +5,7 @@ TEST?=./...
 GOFMT_FILES?=$$(find . -name '*.go' | grep -v vendor)
 TESTARGS?=-gcflags=-l
 
-default: install
+default: test
 
 install:
 	# Install and run Commitizen locally
@@ -20,7 +20,6 @@ install:
 	npm install --save-dev husky
 
 lint:
-	golint ./...
 	golangci-lint run ./...
 
 tools:
