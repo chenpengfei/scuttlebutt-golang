@@ -35,6 +35,7 @@ benchmark:
 	go test -bench=. examples/pull-stream/random_test.go examples/pull-stream/random.go
 
 lint:
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint
 	golangci-lint run ./...
 
 test: generate mock
