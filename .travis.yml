@@ -21,9 +21,7 @@ notifications:
     - langyu0826@gmail.com
 
 before_install:
-  - go get golang.org/x/tools/cmd/vet
   - go get github.com/modocache/gover
-  - go get github.com/vendor/package/...
 
 # Anything in before_script that returns a nonzero exit code will flunk the
 # build and immediately stop. It's sorta like having set -e enabled in bash.
@@ -39,8 +37,6 @@ before_script:
 # failing test, we want to see both. Configure golangci-lint with a
 # .golangci.yml file at the top level of your repo.
 script:
-  # Vet examines Go source code and reports suspicious construct
-  - go vet github.com/chenpengfei/scuttlebutt-golang...
   - golangci-lint run       # run a bunch of code checkers/linters in parallel
   - go test -v -race ./...  # Run all the tests with the race detector enabled
   # Collect coverage reports
