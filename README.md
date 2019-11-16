@@ -1,7 +1,6 @@
 # Scuttlebutt Golang 
 [![Build Status](https://travis-ci.com/chenpengfei/scuttlebutt-golang.svg?branch=master)](https://travis-ci.com/chenpengfei/scuttlebutt-golang)
-[![Software License](https://img.shields.io/badge/License-MIT-orange.svg?style=flat-square)](https://github.com/vendor/package/blob/master/LICENSE.md)
-[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/vendor/package)
+[![Software License](https://img.shields.io/badge/License-MIT-orange.svg?style=flat-square)](https://github.com/chenpengfei/scuttlebutt-golang/blob/master/LICENSE)
 [![Coverage Status](http://codecov.io/github.com/chenpengfei/scuttlebutt-golang/coverage.svg?branch=master)](http://codecov.io/github.com/chenpengfei/scuttlebutt-golang?branch=master)
 
 尝试解决两个一致性问题
@@ -30,9 +29,4 @@ duplex.Link(sa, sb)
 ```
 make run
 ```
-
-
-
-
-
 
