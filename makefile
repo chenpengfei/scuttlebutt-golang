@@ -21,8 +21,9 @@ install:
 
 tools:
 #	go get golang.org/x/tools/cmd/stringer
-#	go get golang.org/x/tools/cmd/cover
 #	go get github.com/golang/mock/mockgen
+#	go get golang.org/x/tools/cmd/cover
+#   go get github.com/mattn/goveralls
 
 download:
 	go mod tidy
@@ -45,7 +46,7 @@ coverprofile: mock
 	@go tool cover 2>/dev/null; if [ $$? -eq 3 ]; then \
 		go get -u golang.org/x/tools/cmd/cover; \
 	fi
-	go test -race $(TEST) $(TESTARGS) -coverprofile=coverage.txt -covermode=atomic
+	go test -race $(TEST) $(TESTARGS) -coverprofile=coverage.txt -covermode=count
 
 cover: coverprofile
 	go tool cover -html=coverage.txt

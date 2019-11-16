@@ -23,6 +23,7 @@ notifications:
 
 before_install:
   - go get -v ./...
+  - go get github.com/mattn/goveralls
 
 # Anything in before_script that returns a nonzero exit code will flunk the
 # build and immediately stop. It's sorta like having set -e enabled in bash.
@@ -39,8 +40,5 @@ before_script:
 # .golangci.yml file at the top level of your repo.
 script:
   - make lint
-  - make coverprofile
+  - $GOPATH/bin/goveralls -service=travis-ci
 
-after_success:
-  # Send coverage reports to Codecov
-  - bash <(curl -s https://codecov.io/bash)
