@@ -19,6 +19,12 @@ install:
 	# This allows us to add git hooks directly into our package.json via the husky.hooks field
 	npm install --save-dev husky
 
+<<<<<<< HEAD
+=======
+lint:
+	golangci-lint run ./...
+
+>>>>>>> 165558b15c8b8d2c602c0dc80c99341ac4880b19
 tools:
 #	go get golang.org/x/tools/cmd/stringer
 #	go get golang.org/x/tools/cmd/cover
