@@ -40,5 +40,5 @@ before_script:
 # .golangci.yml file at the top level of your repo.
 script:
   - make lint
-  - $GOPATH/bin/goveralls -service=travis-ci
+  - make coverprofile && $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
 

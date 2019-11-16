@@ -46,11 +46,11 @@ coverprofile: mock
 	@go tool cover 2>/dev/null; if [ $$? -eq 3 ]; then \
 		go get -u golang.org/x/tools/cmd/cover; \
 	fi
-	go test -race $(TEST) $(TESTARGS) -coverprofile=coverage.txt -covermode=count
+	go test -race $(TEST) $(TESTARGS) -coverprofile=coverage.out -covermode=atomic
 
 cover: coverprofile
-	go tool cover -html=coverage.txt
-	rm coverage.txt
+	go tool cover -html=coverage.out
+	rm coverage.out
 
 fmt:
 	gofmt -w $(GOFMT_FILES)
