@@ -42,6 +42,6 @@ func (e *Event) Once(name string, data interface{}) {
 
 func (e *Event) RemoveListener(name string, cb OnCallback) {
 	//if _, found := e.store[name]; found {
-		//todo
+	//todo
 	//}
 }
