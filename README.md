@@ -2,6 +2,8 @@
 [![Build Status](https://travis-ci.com/chenpengfei/scuttlebutt-golang.svg?branch=master)](https://travis-ci.com/chenpengfei/scuttlebutt-golang)
 [![Software License](https://img.shields.io/badge/License-MIT-orange.svg?style=flat-square)](https://github.com/chenpengfei/scuttlebutt-golang/blob/master/LICENSE)
 [![Coverage Status](https://coveralls.io/repos/github/chenpengfei/scuttlebutt-golang/badge.svg)](https://coveralls.io/github/chenpengfei/scuttlebutt-golang)
+[![Go Report Card](https://goreportcard.com/badge/github.com/chenpengfei/scuttlebutt-golang)](https://goreportcard.com/report/github.com/chenpengfei/scuttlebutt-golang)
+[![GoDoc](https://godoc.org/github.com/chenpengfei/scuttlebutt-golang?status.svg)](https://godoc.org/github.com/chenpengfei/scuttlebutt-golang)
 
 尝试解决两个一致性问题
 1. 最终一致性问题中的 “最终结果同步”，用一个分布式 "HashMap" 解决

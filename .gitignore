@@ -13,7 +13,9 @@
 
 .idea
 node_modules
-coverage
+coverage.txt
 .DS_Store
 issue.md
+commitlint.config.js
+
 

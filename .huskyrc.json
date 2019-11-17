@@ -2,6 +2,6 @@
 	"hooks": {
 		"pre-commit": "make fmt && git add .",
 		"commit-msg": "validate-commit-msg",
-		"pre-push": "make test"
+		"pre-push": "make lint && make test"
 	}
 }

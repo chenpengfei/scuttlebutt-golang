@@ -1,6 +1,6 @@
 # https://github.com/hashicorp/terraform/blob/master/Makefile
 
-VERSION?=v0.0.12
+VERSION?=v0.0.1
 TEST?=./...
 GOFMT_FILES?=$$(find . -name '*.go' | grep -v vendor)
 TESTARGS?=-gcflags=-l
@@ -20,10 +20,10 @@ install:
 	npm install --save-dev husky
 
 tools:
-#	go get golang.org/x/tools/cmd/stringer
-#	go get github.com/golang/mock/mockgen
-#	go get golang.org/x/tools/cmd/cover
-#   go get github.com/mattn/goveralls
+	go get github.com/mattn/goveralls
+	go get github.com/golang/mock/mockgen
+	go get golang.org/x/tools/cmd/cover
+	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $$(go env GOPATH)/bin v1.21.0
 
 download:
 	go mod tidy
@@ -36,21 +36,21 @@ benchmark:
 	go test -bench=. examples/pull-stream/random_test.go examples/pull-stream/random.go
 
 lint:
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint
 	golangci-lint run ./...
 
-test: generate mock
+test: mock
 	go list $(TEST) | xargs -t -n4 go test -race $(TESTARGS) -timeout=2m -parallel=4
 
 coverprofile: mock
-	@go tool cover 2>/dev/null; if [ $$? -eq 3 ]; then \
-		go get -u golang.org/x/tools/cmd/cover; \
-	fi
-	go test -race $(TEST) $(TESTARGS) -coverprofile=coverage.out -covermode=atomic
+	go test -race $(TEST) $(TESTARGS) -coverprofile=coverage.txt -covermode=atomic
 
 cover: coverprofile
-	go tool cover -html=coverage.out
-	rm coverage.out
+	go tool cover -html=coverage.txt
+	rm coverage.txt
+
+report-coverage: coverprofile
+	goveralls -coverprofile=coverage.txt -service=travis-ci
+	rm coverage.txt
 
 fmt:
 	gofmt -w $(GOFMT_FILES)
@@ -61,8 +61,8 @@ fmtcheck:
 # generate runs `go generate` to build the dynamically generated
 # source files, except the protobuf stubs, which are built instead with
 # "make protobuf".
-generate: tools
-	GOFLAGS=-mod=vendor go generate ./...
+generate:
+	go generate ./...
 
 # mock runs `mockgen` to generate mock interfaces from source file
 mock:
