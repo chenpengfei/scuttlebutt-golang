@@ -1,10 +1,15 @@
+// event lib, safe for concurrent
 package event
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+)
+
+//todo.需要改成异步？
 
 type OnCallback func(data interface{})
 
-//todo. did need ?
 var rw sync.RWMutex
 
 type Event struct {
@@ -19,29 +24,43 @@ func NewEvent() *Event {
 
 func (e *Event) Emit(name string, data interface{}) {
 	rw.RLock()
+	defer rw.RUnlock()
+
 	if _, ok := e.store[name]; ok {
 		for _, cb := range e.store[name] {
-			cb(data)
+			if cb != nil {
+				cb(data)
+			}
 		}
 	}
-	rw.RUnlock()
 }
 
 func (e *Event) On(name string, cb OnCallback) {
 	rw.Lock()
+	defer rw.Unlock()
+
 	if _, ok := e.store[name]; !ok {
 		e.store[name] = make([]OnCallback, 0)
 	}
-	e.store[name] = append(e.store[name], cb)
-	rw.Unlock()
-}
 
-func (e *Event) Once(name string, data interface{}) {
-	//todo
+	for i := 0; i < len(e.store[name]); i++ {
+		if e.store[name][i] == nil {
+			e.store[name][i] = cb
+			return
+		}
+	}
+	e.store[name] = append(e.store[name], cb)
 }
 
 func (e *Event) RemoveListener(name string, cb OnCallback) {
-	//if _, found := e.store[name]; found {
-	//todo
-	//}
+	rw.Lock()
+	defer rw.Unlock()
+
+	if cbs, ok := e.store[name]; ok {
+		for i := 0; i < len(cbs); i++ {
+			if fmt.Sprintf("%v", cb) == fmt.Sprintf("%v", cbs[i]) {
+				cbs[i] = nil
+			}
+		}
+	}
 }

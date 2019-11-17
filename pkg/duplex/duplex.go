@@ -305,6 +305,7 @@ func (d *Duplex) GetSink() pullstream.Sink {
 	return d.sink
 }
 
+//todo.可能会爆
 func (d *Duplex) push(data interface{}, toHead bool) {
 	if d.ended.Yes() {
 		return
