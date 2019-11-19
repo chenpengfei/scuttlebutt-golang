@@ -18,6 +18,7 @@ install:
 	# Install husky as devDependency, a handy git hook helper available on npm
 	# This allows us to add git hooks directly into our package.json via the husky.hooks field
 	npm install --save-dev husky
+	npm install --save-dev semantic-release
 
 tools:
 	go get github.com/mattn/goveralls
@@ -39,18 +40,21 @@ lint:
 	golangci-lint run ./...
 
 test: mock
-	go list $(TEST) | xargs -t -n4 go test -race $(TESTARGS) -timeout=2m -parallel=4
+	go test -v -race $(TEST) $(TESTARGS) -covermode=atomic
 
 coverprofile: mock
-	go test -race $(TEST) $(TESTARGS) -coverprofile=coverage.txt -covermode=atomic
+	go test -v -race $(TEST) $(TESTARGS) -covermode=atomic -coverprofile=coverage.txt
 
-cover: coverprofile
+coverage: coverprofile
 	go tool cover -html=coverage.txt
 	rm coverage.txt
 
 report-coverage: coverprofile
 	goveralls -coverprofile=coverage.txt -service=travis-ci
 	rm coverage.txt
+
+semantic-release:
+	npx semantic-release --no-ci
 
 fmt:
 	gofmt -w $(GOFMT_FILES)

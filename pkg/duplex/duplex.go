@@ -1,12 +1,12 @@
 package duplex
 
 import (
+	event "github.com/chenpengfei/events/pkg/emitter"
+	"github.com/chenpengfei/pull-stream/pkg/pull"
+	"github.com/chenpengfei/scuttlebutt-golang/pkg/logger"
+	sb "github.com/chenpengfei/scuttlebutt-golang/pkg/scuttlebutt"
 	"github.com/eapache/queue"
 	"github.com/sirupsen/logrus"
-	"scuttlebutt-golang/pkg/event"
-	"scuttlebutt-golang/pkg/logger"
-	pullstream "scuttlebutt-golang/pkg/pull-stream"
-	sb "scuttlebutt-golang/pkg/scuttlebutt"
 )
 
 // 每一个 SB 维护自己从所有 streams 获取到的知识 (clock)和 updates
@@ -22,7 +22,7 @@ import (
 
 // Stream 是双工协议的抽象
 
-type OnClose func(err pullstream.EndOrError)
+type OnClose func(err pull.EndOrError)
 
 func validate(update *sb.Update) bool {
 	if update == nil {
@@ -41,20 +41,20 @@ type Outgoing struct {
 
 type Duplex struct {
 	sb *sb.Scuttlebutt
-	*event.Event
+	*event.Emitter
 
 	name        string
-	source      pullstream.Read
-	sink        pullstream.Sink
+	source      pull.Read
+	sink        pull.Sink
 	wrapper     string
 	readable    bool
 	writable    bool
-	ended       pullstream.EndOrError
-	abort       pullstream.EndOrError
+	ended       pull.EndOrError
+	abort       pull.EndOrError
 	syncSent    bool
 	syncRecv    bool
 	buffer      *queue.Queue
-	cb          pullstream.SourceCallback
+	cb          pull.SourceCallback
 	onclose     OnClose
 	isFirstRead bool
 	tail        bool
@@ -70,13 +70,13 @@ type Duplex struct {
 func NewDuplex(sb *sb.Scuttlebutt, opts ...Option) *Duplex {
 	duplex := &Duplex{
 		sb:          sb,
-		Event:       event.NewEvent(),
+		Emitter:     event.NewEmitter(),
 		name:        "stream",
 		wrapper:     "json",
 		readable:    true,
 		writable:    true,
-		ended:       pullstream.Null,
-		abort:       pullstream.Null,
+		ended:       pull.Null,
+		abort:       pull.Null,
 		syncSent:    false,
 		syncRecv:    false,
 		buffer:      queue.New(),
@@ -103,7 +103,7 @@ func NewDuplex(sb *sb.Scuttlebutt, opts ...Option) *Duplex {
 
 	duplex.sb = sb
 
-	duplex.onclose = func(err pullstream.EndOrError) {
+	duplex.onclose = func(err pull.EndOrError) {
 		duplex.sb.RemoveListener("_update", duplex.onUpdate)
 		duplex.sb.RemoveListener("dispose", duplex.end)
 		duplex.sb.Streams--
@@ -134,11 +134,11 @@ func (d *Duplex) drain() {
 		// we'd like to end and there is no left items to be sent
 		d.callback(d.ended, nil)
 	} else if d.buffer.Length() != 0 {
-		d.callback(pullstream.Null, d.buffer.Remove())
+		d.callback(pull.Null, d.buffer.Remove())
 	}
 }
 
-func (d *Duplex) callback(err pullstream.EndOrError, data interface{}) {
+func (d *Duplex) callback(err pull.EndOrError, data interface{}) {
 	cb := d.cb
 	if err.Yes() && d.onclose != nil {
 		c := d.onclose
@@ -212,7 +212,7 @@ func (d *Duplex) onUpdate(data interface{}) {
 	d.log.WithField("peerSources", d.peerSources).Debug("updated peerSources to")
 }
 
-func (d *Duplex) rawSource(abort pullstream.EndOrError, cb pullstream.SourceCallback) {
+func (d *Duplex) rawSource(abort pull.EndOrError, cb pull.SourceCallback) {
 	//qa. if (abort) { 代表 End 或 Error.
 	if abort.Yes() {
 		d.abort = abort
@@ -233,9 +233,9 @@ func (d *Duplex) rawSource(abort pullstream.EndOrError, cb pullstream.SourceCall
 	d.drain()
 }
 
-func (d *Duplex) rawSink(read pullstream.Read) {
-	var next pullstream.SourceCallback
-	next = func(end pullstream.EndOrError, update interface{}) {
+func (d *Duplex) rawSink(read pull.Read) {
+	var next pull.SourceCallback
+	next = func(end pull.EndOrError, update interface{}) {
 		if end.End() {
 			d.log.WithField("peerId", d.peerId).Debug("sink ended by peer")
 			d.end(end)
@@ -277,14 +277,14 @@ func (d *Duplex) rawSink(read pullstream.Read) {
 	read(d.endOrError(), next)
 }
 
-func (d *Duplex) endOrError() pullstream.EndOrError {
+func (d *Duplex) endOrError() pull.EndOrError {
 	if d.ended.Yes() {
 		return d.ended
 	}
 	return d.abort
 }
 
-func (d *Duplex) GetSource() pullstream.Read {
+func (d *Duplex) GetSource() pull.Read {
 	if d.source == nil {
 		if d.wrapper == "raw" {
 			d.source = d.rawSource
@@ -296,7 +296,7 @@ func (d *Duplex) GetSource() pullstream.Read {
 	return d.source
 }
 
-func (d *Duplex) GetSink() pullstream.Sink {
+func (d *Duplex) GetSink() pull.Sink {
 	if d.sink == nil {
 		d.sink = d.rawSink
 	} else {
@@ -327,12 +327,12 @@ func (d *Duplex) push(data interface{}, toHead bool) {
 }
 
 func (d *Duplex) end(data interface{}) {
-	end := data.(pullstream.EndOrError)
+	end := data.(pull.EndOrError)
 	if !d.ended.Yes() {
 		if end.Yes() {
 			d.ended = end
 		} else {
-			d.ended = pullstream.End
+			d.ended = pull.End
 		}
 	}
 
@@ -361,7 +361,7 @@ func (d *Duplex) start(data interface{}) {
 				d.Emit("synced", nil)
 			}
 			if !d.tail {
-				d.end(pullstream.Null)
+				d.end(pull.Null)
 			}
 		}
 
@@ -385,7 +385,7 @@ func (d *Duplex) start(data interface{}) {
 		rest()
 	} else {
 		d.Emit("error", nil)
-		d.end(pullstream.Err)
+		d.end(pull.Err)
 		return
 	}
 }

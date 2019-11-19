@@ -1,8 +1,8 @@
 package duplex
 
-import pullstream "scuttlebutt-golang/pkg/pull-stream"
+import "github.com/chenpengfei/pull-stream/pkg/pull"
 
 func Link(a *Duplex, b *Duplex) {
-	pullstream.Pull(a.GetSource(), b.GetSink())
-	pullstream.Pull(b.GetSource(), a.GetSink())
+	pull.Pull(a.GetSource(), b.GetSink())
+	pull.Pull(b.GetSource(), a.GetSink())
 }

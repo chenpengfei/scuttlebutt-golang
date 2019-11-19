@@ -1,9 +1,9 @@
 package model
 
 import (
-	"scuttlebutt-golang/pkg/duplex"
-	log "scuttlebutt-golang/pkg/logger"
-	sb "scuttlebutt-golang/pkg/scuttlebutt"
+	"github.com/chenpengfei/scuttlebutt-golang/pkg/duplex"
+	log "github.com/chenpengfei/scuttlebutt-golang/pkg/logger"
+	sb "github.com/chenpengfei/scuttlebutt-golang/pkg/scuttlebutt"
 )
 
 type ValueModel struct {

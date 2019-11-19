@@ -1,10 +1,10 @@
 package main
 
 import (
-	"scuttlebutt-golang/pkg/duplex"
-	log "scuttlebutt-golang/pkg/logger"
-	"scuttlebutt-golang/pkg/model"
-	sb "scuttlebutt-golang/pkg/scuttlebutt"
+	"github.com/chenpengfei/scuttlebutt-golang/pkg/duplex"
+	log "github.com/chenpengfei/scuttlebutt-golang/pkg/logger"
+	"github.com/chenpengfei/scuttlebutt-golang/pkg/model"
+	sb "github.com/chenpengfei/scuttlebutt-golang/pkg/scuttlebutt"
 )
 
 func main() {

@@ -1,30 +1,30 @@
 package pull_pushable
 
 import (
+	"github.com/chenpengfei/pull-stream/pkg/pull"
 	"github.com/eapache/queue"
 	"github.com/sirupsen/logrus"
-	pullstream "scuttlebutt-golang/pkg/pull-stream"
 )
 
 var buffer *queue.Queue
 
-type OnClose func(end pullstream.EndOrError)
-type End func(end pullstream.EndOrError)
+type OnClose func(end pull.EndOrError)
+type End func(end pull.EndOrError)
 type Push func(data interface{})
 
-func Pushable(name string, onClose OnClose) (pullstream.Read, End, Push) {
+func Pushable(name string, onClose OnClose) (pull.Read, End, Push) {
 	log := logrus.WithField("pushable", name)
 
 	// indicates that the downstream want's to abort the stream
-	var abort pullstream.EndOrError
-	var ended pullstream.EndOrError
+	var abort pull.EndOrError
+	var ended pull.EndOrError
 
-	var cb pullstream.SourceCallback
+	var cb pull.SourceCallback
 
 	//todo. 非线程安全
 	buffer = queue.New()
 
-	callback := func(end pullstream.EndOrError, data interface{}) {
+	callback := func(end pull.EndOrError, data interface{}) {
 		// if error and pushable passed onClose, call it
 		// the first time this stream ends or errors.
 		if ended.Yes() && (onClose != nil) {
@@ -50,17 +50,17 @@ func Pushable(name string, onClose OnClose) (pullstream.Read, End, Push) {
 		} else if buffer.Length() == 0 && ended.Yes() {
 			callback(ended, nil)
 		} else if buffer.Length() > 0 {
-			callback(pullstream.Null, buffer.Remove())
+			callback(pull.Null, buffer.Remove())
 		}
 	}
 
-	end := func(end pullstream.EndOrError) {
+	end := func(end pull.EndOrError) {
 		log.Debug("end has been called")
 		if !ended.Yes() {
 			if end.Yes() {
 				ended = end
 			} else {
-				ended = pullstream.End
+				ended = pull.End
 			}
 		}
 		// attempt to drain
@@ -83,7 +83,7 @@ func Pushable(name string, onClose OnClose) (pullstream.Read, End, Push) {
 		buffer.Add(data)
 	}
 
-	read := func(end pullstream.EndOrError, _cb pullstream.SourceCallback) {
+	read := func(end pull.EndOrError, _cb pull.SourceCallback) {
 		log.WithField("end", end).Debug("read")
 		if end.Yes() {
 			abort = end

@@ -1,9 +1,9 @@
 package scuttlebutt
 
 import (
+	event "github.com/chenpengfei/events/pkg/emitter"
+	"github.com/chenpengfei/scuttlebutt-golang/pkg/logger"
 	"github.com/sirupsen/logrus"
-	"scuttlebutt-golang/pkg/event"
-	"scuttlebutt-golang/pkg/logger"
 	"time"
 )
 
@@ -45,7 +45,7 @@ type Protocol interface {
 
 type Scuttlebutt struct {
 	Protocol
-	*event.Event
+	*event.Emitter
 
 	Id      SourceId
 	Accept  interface{}
@@ -63,7 +63,7 @@ func NewScuttlebutt(protocol Protocol, opts ...Option) *Scuttlebutt {
 	sb := &Scuttlebutt{
 		Protocol: protocol,
 		Sources:  make(map[SourceId]Timestamp),
-		Event:    event.NewEvent(),
+		Emitter:  event.NewEmitter(),
 	}
 
 	for _, opt := range opts {

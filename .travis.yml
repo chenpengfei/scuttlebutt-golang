@@ -9,8 +9,6 @@ env: GO111MODULE=on
 # responsibility to keep their compiler up to date.
 go:
   - 1.12.x
-  - master
-  - tip
 
 # Only clone the most recent commit.
 git:
@@ -20,15 +18,27 @@ notifications:
   email:
     - langyu0826@gmail.com
 
-before_install:
-  - go get -v ./...
-
 install:
-  - make tools
+  - env GO111MODULE=on make tools
+
+before_script:
+  - env GO111MODULE=on go get -v ./...
 
 script:
-  make report-coverage
+  - env GO111MODULE=on make lint
+  - env GO111MODULE=on make report-coverage
+  - nvm install 10
 
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
-
+jobs:
+  include:
+    # Define the release stage that runs semantic-release
+    - stage: release
+      name: "Semantic Release"
+      # Advanced: optionally overwrite your default `script` step to skip the tests
+      # script:
+      #   — make
+      deploy:
+        provider: script
+        skip_cleanup: true
+        # Use nvm to install and use the Node LTS version (nvm is installed on all Travis images)
+        script: npx semantic-release
