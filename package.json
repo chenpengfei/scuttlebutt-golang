@@ -5,12 +5,21 @@
     "url": "https://github.com/chenpengfei/scuttlebutt-golang.git"
   },
   "license": "MIT",
+  "release": {
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/github"
+    ]
+  },
   "devDependencies": {
     "@commitlint/cli": "^8.2.0",
     "@commitlint/config-conventional": "^8.2.0",
+    "@semantic-release/exec": "^3.3.8",
     "commitizen": "^4.0.3",
     "cz-conventional-changelog": "^3.0.2",
-    "husky": "^3.0.9"
+    "husky": "^3.1.0",
+    "semantic-release": "^15.13.31"
   },
   "husky": {
     "hooks": {
@@ -24,5 +33,6 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
-  }
+  },
+  "version": "0.0.0"
 }
