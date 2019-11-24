@@ -2,6 +2,7 @@ package scuttlebutt
 
 import (
 	event "github.com/chenpengfei/events/pkg/emitter"
+	"github.com/chenpengfei/pull-stream/pkg/pull"
 	"github.com/chenpengfei/scuttlebutt-golang/pkg/logger"
 	"github.com/sirupsen/logrus"
 	"time"
@@ -40,14 +41,14 @@ type Protocol interface {
 	ApplyUpdates(update *Update) bool
 	// 根据对端传来的 clock，计算出来的 delta。而 delta 是 Update 集合
 	// 每个 stream 上记录对端传来的 clock，并且会随着后续从 stream 收到的 Update 不断更新
-	History(peerSources Sources) []*Update
+	History(peerSources Sources, accept interface{}) []*Update
 }
 
 type Scuttlebutt struct {
 	Protocol
 	*event.Emitter
 
-	Id      SourceId
+	id      SourceId
 	Accept  interface{}
 	Sources Sources
 
@@ -72,20 +73,16 @@ func NewScuttlebutt(protocol Protocol, opts ...Option) *Scuttlebutt {
 
 	if sb.sign != nil && sb.verify != nil {
 		if sb.createId != nil {
-			sb.Id = sb.createId()
+			sb.id = sb.createId()
 		}
-		if sb.Id == "" {
-			panic("Id needed!")
+		if sb.id == "" {
+			panic("id needed!")
 		}
 	} else {
-		sb.Id = CreateId()
+		sb.id = CreateId()
 	}
 
-	for _, opt := range opts {
-		opt(sb)
-	}
-
-	sb.log = logger.WithNamespace(string(sb.Id))
+	sb.log = logger.WithNamespace(string(sb.id))
 
 	return sb
 }
@@ -98,13 +95,17 @@ func (sb *Scuttlebutt) ApplyUpdates(update *Update) bool {
 	panic("method(applyUpdate) must be implemented")
 }
 
-func (sb *Scuttlebutt) History(peerSources Sources) []*Update {
+func (sb *Scuttlebutt) History(peerSources Sources, accept interface{}) []*Update {
 	panic("method(history) must be implemented")
+}
+
+func (sb *Scuttlebutt) Id() SourceId {
+	return sb.id
 }
 
 // localUpdate 和 history 会触发 Update
 func (sb *Scuttlebutt) Update(update *Update) bool {
-	sb.log.WithField("data", update.Data).Info("update")
+	sb.log.WithField("data", update.Data).Info("_update")
 
 	ts := update.Timestamp
 	sourceId := update.SourceId
@@ -119,7 +120,7 @@ func (sb *Scuttlebutt) Update(update *Update) bool {
 	sb.Sources[sourceId] = ts
 	sb.log.WithField("sources", sb.Sources).Debug("update our sources to")
 
-	if sourceId != sb.Id {
+	if sourceId != sb.id {
 		if sb.verify != nil {
 			return sb.didVerification(sb.verify(update), update)
 		} else {
@@ -160,14 +161,13 @@ func (sb *Scuttlebutt) didVerification(verified bool, update *Update) bool {
 
 func (sb *Scuttlebutt) LocalUpdate(any interface{}) {
 	sb.Update(&Update{
-		SourceId:  sb.Id,
-		Timestamp: Timestamp(time.Now().UnixNano()),
+		SourceId:  sb.id,
+		Timestamp: Timestamp(time.Now().UnixNano() / int64(time.Millisecond)),
 		Data:      any,
 	})
 }
 
-// each stream will be ended due to this event
-//todo
-//func (sb *Scuttlebutt) dispose() {
-//	sb.Emit("dispose", nil)
-//}
+//each stream will be ended due to this event
+func (sb *Scuttlebutt) Dispose() {
+	sb.Emit("dispose", pull.End)
+}

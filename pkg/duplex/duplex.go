@@ -5,7 +5,6 @@ import (
 	"github.com/chenpengfei/pull-stream/pkg/pull"
 	"github.com/chenpengfei/scuttlebutt-golang/pkg/logger"
 	sb "github.com/chenpengfei/scuttlebutt-golang/pkg/scuttlebutt"
-	"github.com/eapache/queue"
 	"github.com/sirupsen/logrus"
 )
 
@@ -53,7 +52,7 @@ type Duplex struct {
 	abort       pull.EndOrError
 	syncSent    bool
 	syncRecv    bool
-	buffer      *queue.Queue
+	buffer      *Buffer
 	cb          pull.SourceCallback
 	onclose     OnClose
 	isFirstRead bool
@@ -79,7 +78,7 @@ func NewDuplex(sb *sb.Scuttlebutt, opts ...Option) *Duplex {
 		abort:       pull.Null,
 		syncSent:    false,
 		syncRecv:    false,
-		buffer:      queue.New(),
+		buffer:      NewBuffer(),
 		cb:          nil,
 		onclose:     nil,
 		isFirstRead: true,
@@ -104,14 +103,17 @@ func NewDuplex(sb *sb.Scuttlebutt, opts ...Option) *Duplex {
 	duplex.sb = sb
 
 	duplex.onclose = func(err pull.EndOrError) {
-		duplex.sb.RemoveListener("_update", duplex.onUpdate)
-		duplex.sb.RemoveListener("dispose", duplex.end)
-		duplex.sb.Streams--
-		duplex.Emit("unstream", duplex.sb.Streams)
+		// avoid dead lock
+		go func() {
+			duplex.sb.RemoveListener("_update", duplex.onUpdate)
+			duplex.sb.RemoveListener("dispose", duplex.End)
+			duplex.sb.Streams--
+			duplex.Emit("unstream", duplex.sb.Streams)
+		}()
 	}
 
 	sb.Streams++
-	sb.On("dispose", duplex.end)
+	sb.On("dispose", duplex.End)
 
 	return duplex
 }
@@ -134,7 +136,7 @@ func (d *Duplex) drain() {
 		// we'd like to end and there is no left items to be sent
 		d.callback(d.ended, nil)
 	} else if d.buffer.Length() != 0 {
-		d.callback(pull.Null, d.buffer.Remove())
+		d.callback(pull.Null, d.buffer.Shift())
 	}
 }
 
@@ -154,7 +156,7 @@ func (d *Duplex) callback(err pull.EndOrError, data interface{}) {
 
 func (d *Duplex) getOutgoing() *Outgoing {
 	outgoing := &Outgoing{
-		id:    d.sb.Id,
+		id:    d.sb.Id(),
 		clock: d.sb.Sources,
 	}
 
@@ -192,7 +194,7 @@ func (d *Duplex) onUpdate(data interface{}) {
 
 	isAccepted := true
 	if d.peerAccept != nil {
-		isAccepted = d.sb.IsAccepted(d.peerAccept, update)
+		isAccepted = d.sb.Protocol.IsAccepted(d.peerAccept, update)
 	}
 
 	if !isAccepted {
@@ -201,7 +203,7 @@ func (d *Duplex) onUpdate(data interface{}) {
 	}
 
 	// send 'scuttlebutt' to peer
-	update.From = d.sb.Id
+	update.From = d.sb.Id()
 	d.push(update, false)
 	d.log.WithField("update", update).Debug("'sent 'update to peer")
 
@@ -237,18 +239,18 @@ func (d *Duplex) rawSink(read pull.Read) {
 	var next pull.SourceCallback
 	next = func(end pull.EndOrError, update interface{}) {
 		if end.End() {
-			d.log.WithField("peerId", d.peerId).Debug("sink ended by peer")
-			d.end(end)
+			d.log.Debugf("sink ended by peer(%v)", d.peerId)
+			d.End(end)
 			return
 		}
 
 		if end.Error() {
 			d.log.Debug("sink reading errors")
-			d.end(end)
+			d.End(end)
 			return
 		}
 
-		d.log.WithField("update", update).WithField("peerId", d.peerId).Debug("sink reads data from peer")
+		d.log.WithField("update", update).Debugf("sink reads data from peer(%v)", d.peerId)
 		if v, ok := update.(*sb.Update); ok {
 			if !d.writable {
 				return
@@ -275,6 +277,7 @@ func (d *Duplex) rawSink(read pull.Read) {
 		read(d.endOrError(), next)
 	}
 	read(d.endOrError(), next)
+	//todo.通过 channel 实现，防止栈溢出
 }
 
 func (d *Duplex) endOrError() pull.EndOrError {
@@ -284,7 +287,7 @@ func (d *Duplex) endOrError() pull.EndOrError {
 	return d.abort
 }
 
-func (d *Duplex) GetSource() pull.Read {
+func (d *Duplex) Source() pull.Read {
 	if d.source == nil {
 		if d.wrapper == "raw" {
 			d.source = d.rawSource
@@ -296,7 +299,7 @@ func (d *Duplex) GetSource() pull.Read {
 	return d.source
 }
 
-func (d *Duplex) GetSink() pull.Sink {
+func (d *Duplex) Sink() pull.Sink {
 	if d.sink == nil {
 		d.sink = d.rawSink
 	} else {
@@ -320,13 +323,13 @@ func (d *Duplex) push(data interface{}, toHead bool) {
 
 	// otherwise, buffer data
 	if toHead {
-		d.buffer.Add(data)
+		d.buffer.Unshift(data)
 	} else {
-		d.buffer.Add(data)
+		d.buffer.Push(data)
 	}
 }
 
-func (d *Duplex) end(data interface{}) {
+func (d *Duplex) End(data interface{}) {
 	end := data.(pull.EndOrError)
 	if !d.ended.Yes() {
 		if end.Yes() {
@@ -341,51 +344,51 @@ func (d *Duplex) end(data interface{}) {
 }
 
 func (d *Duplex) start(data interface{}) {
-	d.log.WithField("data", data).Info("start")
-	if incoming, ok := data.(*Outgoing); ok {
-		d.peerSources = incoming.clock
-		d.peerId = incoming.id
-		d.peerAccept = incoming.accept
-
-		rest := func() {
-			d.push("SYNC", false)
-			d.syncSent = true
-			d.log.WithField("peerId", d.peerId).Debug("sent 'SYNC' to peer")
-
-			// when we have sent all history
-			d.Emit("header", incoming)
-			d.Emit("syncSent", nil)
-			// when we have received all history
-			// emit 'synced' when this stream has synced.
-			if d.syncRecv {
-				d.Emit("synced", nil)
-			}
-			if !d.tail {
-				d.end(pull.Null)
-			}
-		}
-
-		// won't send history out if the stream is write-only
-		if !d.readable {
-			d.sb.On("_update", d.onUpdate)
-			rest()
-			return
-		}
-
-		// call this.history to calculate the delta between peers
-		// AsyncScuttlebutt
-		history := d.sb.Protocol.History(d.peerSources)
-		for _, h := range history {
-			h.From = d.sb.Id
-			d.push(h, false)
-			d.log.WithField("peerId", d.peerId).WithField("history", h).Debug("sent history")
-		}
-		d.sb.On("_update", d.onUpdate)
-		//qa. sent history 此时应该是等对方发送 'SYNC'.
-		rest()
-	} else {
+	d.log.WithField("data", data).Info("start with data")
+	incoming, ok := data.(*Outgoing)
+	if !ok || incoming.clock == nil {
 		d.Emit("error", nil)
-		d.end(pull.Err)
+		d.End(pull.Err)
 		return
 	}
+
+	d.peerSources = incoming.clock
+	d.peerId = incoming.id
+	d.peerAccept = incoming.accept
+
+	rest := func() {
+		d.push("SYNC", false)
+		d.syncSent = true
+		d.log.Debugf("sent 'SYNC' to peer(%v)", d.peerId)
+
+		// when we have sent all history
+		d.Emit("header", incoming)
+		d.Emit("syncSent", nil)
+		// when we have received all history
+		// emit 'synced' when this stream has synced.
+		if d.syncRecv {
+			d.Emit("synced", nil)
+		}
+		if !d.tail {
+			d.End(pull.Null)
+		}
+	}
+
+	// won't send history out if the stream is write-only
+	if !d.readable {
+		d.sb.On("_update", d.onUpdate)
+		rest()
+		return
+	}
+
+	// call this.history to calculate the delta between peers
+	// AsyncScuttlebutt
+	history := d.sb.Protocol.History(d.peerSources, d.peerAccept)
+	for _, h := range history {
+		h.From = d.sb.Id()
+		d.push(h, false)
+		d.log.WithField("history", h).Debugf("sent 'history' to peer(%v)", d.peerId)
+	}
+	d.sb.On("_update", d.onUpdate)
+	rest()
 }

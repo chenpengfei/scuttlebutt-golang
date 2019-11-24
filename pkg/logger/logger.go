@@ -15,21 +15,20 @@ var (
 )
 
 const (
-	LayoutFullMillisecond  = "2006/01/02 15:04:05.000"
-	LayoutFullSecond       = "2006/01/02 15:04:05.000"
-	LayoutShortMillisecond = "04:05.000"
-	LayoutShortSecond      = "04:05.000"
+	LayoutRelease = "2006/01/02 15:04:05.000"
+	LayoutDebug   = "05.000"
 
 	NamespaceFieldKey = "ns"
 )
 
+//todo.优化，观测性更友好
 func InitLogWriterEarly() {
 	std.SetOutput(os.Stdout)
 	std.SetLevel(logrus.DebugLevel)
 	formatter := logrus.TextFormatter{
 		DisableColors:   false,
 		FullTimestamp:   true,
-		TimestampFormat: LayoutShortMillisecond,
+		TimestampFormat: LayoutDebug,
 		DisableSorting:  false,
 		SortingFunc: func(strings []string) {
 			sort.Slice(strings, func(i, j int) bool {
