@@ -1,5 +1,5 @@
-github.com/chenpengfei/events v1.1.1 h1:uJ8pBHZC5y+o2ZqNKKuQ84LBLWwlq6jfHAB6/kYZX+Q=
-github.com/chenpengfei/events v1.1.1/go.mod h1:ux9kdA3tO6ul8muVzsbaXhF1LhypbEmfcK6agZE96W8=
+github.com/chenpengfei/events v1.1.2 h1:zsYVmAGMGd53dgV1RsHlDX3KN8vqil+PzRVEjzp1KP8=
+github.com/chenpengfei/events v1.1.2/go.mod h1:ux9kdA3tO6ul8muVzsbaXhF1LhypbEmfcK6agZE96W8=
 github.com/chenpengfei/pull-stream v1.0.0 h1:AqBvic3IyOZGUhqvoaDyf3ECWmYAuyQK39qhsIPnqqU=
 github.com/chenpengfei/pull-stream v1.0.0/go.mod h1:KFPv9qpgqi1xMeFBCfFKgtEe6TGqA+ZM0IP0Q/Z6Pds=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

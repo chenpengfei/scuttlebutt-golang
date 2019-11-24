@@ -1,8 +1,7 @@
-package test
+package model
 
 import (
 	"github.com/chenpengfei/scuttlebutt-golang/pkg/duplex"
-	"github.com/chenpengfei/scuttlebutt-golang/pkg/model"
 	"github.com/chenpengfei/scuttlebutt-golang/pkg/scuttlebutt"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -12,7 +11,7 @@ import (
 func TestModelFilter(t *testing.T) {
 	assert := assert.New(t)
 
-	accept := &model.Accept{
+	accept := &Accept{
 		Blacklist: nil,
 		Whitelist: []string{"foo"},
 	}
@@ -36,8 +35,8 @@ func TestModelFilter(t *testing.T) {
 	}
 
 	t.Run("whitelist-filter out in history", func(t *testing.T) {
-		a := model.NewSyncModel(scuttlebutt.WithId("A"))
-		b := model.NewSyncModel(scuttlebutt.WithId("B"), scuttlebutt.WithAccept(accept))
+		a := NewSyncModel(scuttlebutt.WithId("A"))
+		b := NewSyncModel(scuttlebutt.WithId("B"), scuttlebutt.WithAccept(accept))
 
 		sa := a.CreateStream()
 		sb := b.CreateStream()
@@ -56,8 +55,8 @@ func TestModelFilter(t *testing.T) {
 	})
 
 	t.Run("whitelist-filter out in following update", func(t *testing.T) {
-		a := model.NewSyncModel(scuttlebutt.WithId("A"))
-		b := model.NewSyncModel(scuttlebutt.WithId("B"), scuttlebutt.WithAccept(accept))
+		a := NewSyncModel(scuttlebutt.WithId("A"))
+		b := NewSyncModel(scuttlebutt.WithId("B"), scuttlebutt.WithAccept(accept))
 
 		sa := a.CreateStream()
 		sb := b.CreateStream()

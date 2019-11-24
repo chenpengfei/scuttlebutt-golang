@@ -1,9 +1,8 @@
-package test
+package model
 
 import (
 	"github.com/chenpengfei/pull-stream/pkg/pull"
 	"github.com/chenpengfei/scuttlebutt-golang/pkg/duplex"
-	"github.com/chenpengfei/scuttlebutt-golang/pkg/model"
 	"github.com/chenpengfei/scuttlebutt-golang/pkg/scuttlebutt"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -13,8 +12,8 @@ func TestStreamEnd(t *testing.T) {
 	assert := assert.New(t)
 
 	t.Run("end one stream", func(t *testing.T) {
-		a := model.NewSyncModel(scuttlebutt.WithId("A"))
-		b := model.NewSyncModel(scuttlebutt.WithId("B"))
+		a := NewSyncModel(scuttlebutt.WithId("A"))
+		b := NewSyncModel(scuttlebutt.WithId("B"))
 
 		sa := a.CreateStream()
 		sb := b.CreateStream()
@@ -31,8 +30,8 @@ func TestStreamEnd(t *testing.T) {
 	})
 
 	t.Run("stream count", func(t *testing.T) {
-		a := model.NewSyncModel()
-		b := model.NewSyncModel()
+		a := NewSyncModel()
+		b := NewSyncModel()
 
 		sa := a.CreateStream()
 		sb := b.CreateStream()
@@ -53,8 +52,8 @@ func TestStreamEnd(t *testing.T) {
 	})
 
 	t.Run("stream count", func(t *testing.T) {
-		a := model.NewSyncModel()
-		b := model.NewSyncModel()
+		a := NewSyncModel()
+		b := NewSyncModel()
 
 		sa := a.CreateStream()
 		sb := b.CreateStream()

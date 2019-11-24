@@ -71,15 +71,15 @@ func NewScuttlebutt(protocol Protocol, opts ...Option) *Scuttlebutt {
 		opt(sb)
 	}
 
-	if sb.sign != nil && sb.verify != nil {
-		if sb.createId != nil {
+	if sb.id == "" {
+		if sb.sign != nil && sb.verify != nil && sb.createId != nil {
 			sb.id = sb.createId()
+		} else {
+			sb.id = CreateId()
 		}
 		if sb.id == "" {
 			panic("id needed!")
 		}
-	} else {
-		sb.id = CreateId()
 	}
 
 	sb.log = logger.WithNamespace(string(sb.id))
@@ -103,7 +103,6 @@ func (sb *Scuttlebutt) Id() SourceId {
 	return sb.id
 }
 
-// localUpdate 和 history 会触发 Update
 func (sb *Scuttlebutt) Update(update *Update) bool {
 	sb.log.WithField("data", update.Data).Info("_update")
 
@@ -154,7 +153,7 @@ func (sb *Scuttlebutt) didVerification(verified bool, update *Update) bool {
 	r := sb.Protocol.ApplyUpdates(update)
 	if r {
 		sb.Emit("_update", update)
-		sb.log.Debug("applied 'update' and fired ⚡_update")
+		sb.log.WithField("total_listeners", sb.ListenerCount("_update")).Debug("applied 'update' and fired ⚡_update")
 	}
 	return r
 }
