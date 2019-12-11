@@ -1,14 +1,17 @@
 package main
 
 import (
+	"context"
+	cw "github.com/chenpengfei/context-wrapper"
 	"github.com/chenpengfei/scuttlebutt-golang/pkg/duplex"
 	log "github.com/chenpengfei/scuttlebutt-golang/pkg/logger"
 	"github.com/chenpengfei/scuttlebutt-golang/pkg/model"
 	sb "github.com/chenpengfei/scuttlebutt-golang/pkg/scuttlebutt"
-	"time"
 )
 
 func main() {
+	ctx := cw.WithSignal(context.Background())
+
 	a := model.NewSyncModel(sb.WithId("A"))
 	b := model.NewSyncModel(sb.WithId("B"))
 
@@ -23,7 +26,8 @@ func main() {
 
 	duplex.Link(sa, sb)
 
-	time.Sleep(100 * time.Millisecond)
+	<-ctx.Done()
+	log.Info("I have to go...")
 }
 
 func printKeyValue(model *model.SyncModel, key string) {

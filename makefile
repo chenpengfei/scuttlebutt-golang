@@ -33,6 +33,15 @@ download:
 run:
 	go run examples/scuttlebutt/main.go
 
+app:
+	go run examples/socket/app/app.go
+
+cloud:
+	go run examples/socket/cloud/cloud.go
+
+vehicle:
+	go run examples/socket/vehicle/vehicle.go
+
 benchmark:
 	go test -bench=. examples/pull-stream/random_test.go examples/pull-stream/random.go
 

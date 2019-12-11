@@ -19,11 +19,11 @@ type Sources map[SourceId]Timestamp
 
 // 一次更新
 type Update struct {
-	SourceId  SourceId    `json:"source_id"`
-	Timestamp Timestamp   `json:"timestamp"`
-	From      SourceId    `json:"from"`
-	Digest    string      `json:"digest"`
-	Data      interface{} `json:"data"`
+	SourceId  SourceId               `json:"source_id"`
+	Timestamp Timestamp              `json:"timestamp"`
+	From      SourceId               `json:"from"`
+	Digest    string                 `json:"digest"`
+	Data      map[string]interface{} `json:"data"`
 }
 
 type Sign func(update *Update) (string, error)
@@ -158,7 +158,7 @@ func (sb *Scuttlebutt) didVerification(verified bool, update *Update) bool {
 	return r
 }
 
-func (sb *Scuttlebutt) LocalUpdate(any interface{}) {
+func (sb *Scuttlebutt) LocalUpdate(any map[string]interface{}) {
 	sb.Update(&Update{
 		SourceId:  sb.id,
 		Timestamp: Timestamp(time.Now().UnixNano() / int64(time.Millisecond)),
@@ -168,5 +168,5 @@ func (sb *Scuttlebutt) LocalUpdate(any interface{}) {
 
 //each stream will be ended due to this event
 func (sb *Scuttlebutt) Dispose() {
-	sb.Emit("dispose", pull.End)
+	sb.Emit("dispose", pull.ErrPullStreamEnd)
 }

@@ -23,7 +23,7 @@ func TestStreamEnd(t *testing.T) {
 		assert.Equal(1, a.ListenerCount("_update"))
 		assert.Equal(1, b.ListenerCount("_update"))
 
-		sa.End(pull.Null)
+		sa.End(pull.ErrPullStreamEnd)
 
 		assert.Equal(0, a.ListenerCount("_update"))
 		assert.Equal(0, b.ListenerCount("_update"))
@@ -48,7 +48,7 @@ func TestStreamEnd(t *testing.T) {
 			assert.Equal(0, data.(int))
 		})
 
-		sa.End(pull.Null)
+		sa.End(pull.ErrPullStreamEnd)
 	})
 
 	t.Run("stream count", func(t *testing.T) {
@@ -64,7 +64,7 @@ func TestStreamEnd(t *testing.T) {
 		duplex.Link(sa, sb)
 
 		a.On("dispose", func(data interface{}) {
-			assert.Equal(pull.End, data)
+			assert.Equal(pull.ErrPullStreamEnd, data)
 		})
 
 		a.Dispose()

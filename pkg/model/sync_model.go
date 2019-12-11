@@ -38,48 +38,50 @@ func NewSyncModel(opts ...sb.Option) *SyncModel {
 func (s *SyncModel) IsAccepted(peerAccept interface{}, update *sb.Update) bool {
 	if peerAccept != nil {
 		accept := peerAccept.(*Accept)
-		if accept.Blacklist != nil {
-			for _, v := range accept.Blacklist {
-				if update.Data.(*ValueModel).K == v {
-					return false
+		for k, _ := range update.Data {
+			if accept.Blacklist != nil {
+				for _, b := range accept.Blacklist {
+					if k == b {
+						return false
+					}
 				}
 			}
-		}
-		if accept.Whitelist != nil {
-			for _, v := range accept.Whitelist {
-				if update.Data.(*ValueModel).K == v {
-					return true
+			if accept.Whitelist != nil {
+				for _, w := range accept.Whitelist {
+					if k == w {
+						return true
+					}
 				}
+				return false
 			}
-			return false
 		}
 	}
 	return true
 }
 
 func (s *SyncModel) ApplyUpdates(update *sb.Update) bool {
-	key := update.Data.(*ValueModel).K
+	for k, v := range update.Data {
+		// ignore if we already have a more recent value
+		if v, found := s.store[k]; found && v.Timestamp > update.Timestamp {
+			s.Emit("_remove", update)
+			return false
+		}
 
-	// ignore if we already have a more recent value
-	if v, found := s.store[key]; found && v.Timestamp > update.Timestamp {
-		s.Emit("_remove", update)
-		return false
-	}
+		if s.store[k] != nil {
+			s.Emit("_remove", s.store[k])
+		}
 
-	if s.store[key] != nil {
-		s.Emit("_remove", s.store[key])
-	}
+		s.store[k] = update
+		s.Emit("update", update)
+		s.Emit("changed", &ValueModel{K: k, V: v})
+		s.Emit("changed:"+k, v)
 
-	s.store[key] = update
-	s.Emit("update", update)
-	s.Emit("changed", &ValueModel{K: key, V: update.Data.(*ValueModel).V})
-	s.Emit("changed:"+key, update.Data.(*ValueModel).V)
-
-	if s.Id() != update.SourceId {
-		s.Emit("changedByPeer", &ValueModelFrom{
-			ValueModel: &ValueModel{K: key, V: update.Data.(*ValueModel).V},
-			From:       update.From,
-		})
+		if s.Id() != update.SourceId {
+			s.Emit("changedByPeer", &ValueModelFrom{
+				ValueModel: &ValueModel{K: k, V: v},
+				From:       update.From,
+			})
+		}
 	}
 
 	return true
@@ -101,7 +103,9 @@ func (s *SyncModel) History(peerSources sb.Sources, accept interface{}) []*sb.Up
 
 func (s *SyncModel) Set(k string, v interface{}) *SyncModel {
 	log.WithField("k", k).WithField("v", v).Debug("set")
-	s.LocalUpdate(&ValueModel{K: k, V: v})
+	data := make(map[string]interface{})
+	data[k] = v
+	s.LocalUpdate(data)
 	return s
 }
 
@@ -110,7 +114,7 @@ func (s *SyncModel) Get(k string, withClock bool) interface{} {
 		if withClock {
 			return s.store[k]
 		} else {
-			return s.store[k].Data.(*ValueModel).V
+			return s.store[k].Data[k]
 		}
 	}
 	return nil
@@ -137,7 +141,21 @@ func (s *SyncModel) CreateWriteStream(opts ...duplex.Option) *duplex.Duplex {
 		duplex.WithReadable(false))
 }
 
+func (s *SyncModel) CreateSinkStream(opts ...duplex.Option) *duplex.Duplex {
+	return duplex.NewDuplex(
+		s.Scuttlebutt,
+		duplex.WithWritable(true),
+		duplex.WithReadable(false))
+}
+
 func (s *SyncModel) CreateReadStream(opts ...duplex.Option) *duplex.Duplex {
+	return duplex.NewDuplex(
+		s.Scuttlebutt,
+		duplex.WithWritable(false),
+		duplex.WithReadable(true))
+}
+
+func (s *SyncModel) CreateSourceStream(opts ...duplex.Option) *duplex.Duplex {
 	return duplex.NewDuplex(
 		s.Scuttlebutt,
 		duplex.WithWritable(false),
