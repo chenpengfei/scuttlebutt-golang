@@ -33,10 +33,10 @@ func validate(update *sb.Update) bool {
 }
 
 type Outgoing struct {
-	Id     sb.SourceId
-	Clock  sb.Sources
-	Meta   interface{}
-	Accept interface{}
+	Id     sb.SourceId `json:"id"`
+	Clock  sb.Sources  `json:"clock"`
+	Meta   interface{} `json:"-"`
+	Accept interface{} `json:"-"`
 }
 
 type Stream interface {
@@ -328,7 +328,7 @@ func (d *Duplex) Sink() interface{} {
 	return d.sink
 }
 
-//todo.可能会爆
+//todo.可能会爆. 增加水线
 func (d *Duplex) push(data interface{}, toHead bool) {
 	if d.ended != nil {
 		return

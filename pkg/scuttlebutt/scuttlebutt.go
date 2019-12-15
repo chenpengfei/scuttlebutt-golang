@@ -1,6 +1,8 @@
 package scuttlebutt
 
 import (
+	"bytes"
+	"encoding/json"
 	event "github.com/chenpengfei/events/pkg/emitter"
 	"github.com/chenpengfei/pull-stream/pkg/pull"
 	"github.com/chenpengfei/scuttlebutt-golang/pkg/logger"
@@ -19,11 +21,34 @@ type Sources map[SourceId]Timestamp
 
 // 一次更新
 type Update struct {
-	SourceId  SourceId               `json:"source_id"`
+	Data      map[string]interface{} `json:"data"`
 	Timestamp Timestamp              `json:"timestamp"`
+	SourceId  SourceId               `json:"source_id"`
 	From      SourceId               `json:"from"`
 	Digest    string                 `json:"digest"`
-	Data      map[string]interface{} `json:"data"`
+}
+
+//todo.test
+func (u *Update) MarshalJSON() ([]byte, error) {
+	tuple := make([]interface{}, 4)
+	tuple[0] = u.Data
+	tuple[1] = u.Timestamp
+	tuple[2] = u.SourceId
+	tuple[3] = u.From
+
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetIndent("", "")
+	err := enc.Encode(tuple)
+	return []byte(buf.String() + "\n"), err
+	//tmp, err := json.Marshal(tuple)
+	//return []byte(string(tmp) + "\n"), err
+}
+
+func (u *Update) UnmarshalJSON(data []byte) error {
+	tuple := []interface{}{&u.Data, &u.Timestamp, &u.SourceId, &u.From}
+	err := json.Unmarshal(data, &tuple)
+	return err
 }
 
 type Sign func(update *Update) (string, error)

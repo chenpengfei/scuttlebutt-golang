@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	cw "github.com/chenpengfei/context-wrapper"
+	rc "github.com/chenpengfei/reconnect-core"
 	"github.com/chenpengfei/scuttlebutt-golang/pkg/duplex"
 	"github.com/chenpengfei/scuttlebutt-golang/pkg/model"
 	"github.com/chenpengfei/scuttlebutt-golang/pkg/socket"
 	log "github.com/sirupsen/logrus"
-	"net"
+	"time"
 )
 
 func main() {
@@ -15,30 +16,33 @@ func main() {
 
 	address := "localhost:9989"
 
-	conn, err := net.Dial("tcp", address)
-	if err != nil {
-		log.WithError(err).Error("connect to cloud failed")
-		return
-	}
+	re := rc.NewReconnection(address)
+	re.OnConnect(func(conn *rc.Reconnection) {
+		socket := socket.NewDuplex(conn, nil)
 
-	socket := socket.NewDuplex(conn, nil)
+		log.WithField("address", address).Info("connected to cloud")
 
-	log.WithField("address", address).Info("connected to cloud")
+		signalModel := model.NewSyncModel()
+		app2c := signalModel.CreateSinkStream()
+		app2c.On("synced", func(data interface{}) {
+			log.Info("signal model has synced with cloud")
+		})
 
-	signalModel := model.NewSyncModel()
-	app2c := signalModel.CreateSinkStream()
-	app2c.On("synced", func(data interface{}) {
-		log.Info("signal model has synced with cloud")
+		duplex.Link(socket, app2c)
+
+		signalModel.On("changedByPeer", func(data interface{}) {
+			speed := signalModel.Get("speed", false)
+			log.WithField("speed", speed).Info("changedByPeer")
+		})
+		signalModel.On("error", func(data interface{}) {
+			log.Error("connection has broken")
+		})
 	})
-
-	duplex.Link(socket, app2c)
-
-	signalModel.On("changedByPeer", func(data interface{}) {
-		speed := signalModel.Get("speed", false)
-		log.WithField("speed", speed).Info("changedByPeer")
+	re.OnNotify(func(err error, duration time.Duration) {
+		log.WithError(err).WithField("next", duration).Error("retry...")
 	})
-	signalModel.On("error", func(data interface{}) {
-		log.Error("connection has broken")
+	re.OnError(func(err error) {
+		log.WithError(err).Error("connection has broken")
 	})
 
 	<-ctx.Done()
