@@ -19,7 +19,9 @@ func main() {
 
 	rc := reconnect.NewReconnection(ctx)
 	rc.OnConnect(func(conn net.Conn) {
-		socket := socket.NewDuplex(conn, nil)
+		socket := socket.NewDuplex(conn, func(end error, data interface{}) {
+			rc.Dial("tcp", address)
+		})
 
 		log.WithField("address", address).Info("connected to cloud")
 
