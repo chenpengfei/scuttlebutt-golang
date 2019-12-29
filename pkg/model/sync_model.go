@@ -16,11 +16,6 @@ type ValueModelFrom struct {
 	From sb.SourceId
 }
 
-type Accept struct {
-	Blacklist []string
-	Whitelist []string
-}
-
 // MemoryModel 的操作不考虑“同步”
 // 同步由 MemoryModel 间 Stream 负责
 // 即业务和 IO 分离
@@ -35,19 +30,18 @@ func NewSyncModel(opts ...sb.Option) *SyncModel {
 	return model
 }
 
-func (s *SyncModel) IsAccepted(peerAccept interface{}, update *sb.Update) bool {
+func (s *SyncModel) IsAccepted(peerAccept *sb.Accept, update *sb.Update) bool {
 	if peerAccept != nil {
-		accept := peerAccept.(*Accept)
 		for k, _ := range update.Data {
-			if accept.Blacklist != nil {
-				for _, b := range accept.Blacklist {
+			if peerAccept.Blacklist != nil {
+				for _, b := range peerAccept.Blacklist {
 					if k == b {
 						return false
 					}
 				}
 			}
-			if accept.Whitelist != nil {
-				for _, w := range accept.Whitelist {
+			if peerAccept.Whitelist != nil {
+				for _, w := range peerAccept.Whitelist {
 					if k == w {
 						return true
 					}
@@ -87,7 +81,7 @@ func (s *SyncModel) ApplyUpdates(update *sb.Update) bool {
 	return true
 }
 
-func (s *SyncModel) History(peerSources sb.Sources, accept interface{}) []*sb.Update {
+func (s *SyncModel) History(peerSources sb.Sources, accept *sb.Accept) []*sb.Update {
 	h := make([]*sb.Update, 0)
 	for _, update := range s.store {
 		if accept != nil && !s.IsAccepted(accept, update) {

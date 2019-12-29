@@ -1,8 +1,6 @@
 package scuttlebutt
 
 import (
-	"crypto/sha256"
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"sort"
@@ -49,24 +47,4 @@ func Sort(history []*Update) {
 		}
 		return history[i].SourceId < history[j].SourceId
 	})
-}
-
-func Sha256Sign(update *Update) (string, error) {
-	return sha256String(update)
-}
-
-func Sha256Verify(update *Update) bool {
-	if digest, err := sha256String(update); err != nil {
-		return false
-	} else {
-		return digest == update.Digest
-	}
-}
-
-func sha256String(update *Update) (string, error) {
-	data, err := json.Marshal(update.Data)
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%x", sha256.Sum256(data)), nil
 }

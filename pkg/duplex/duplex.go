@@ -36,7 +36,7 @@ type Outgoing struct {
 	Id     sb.SourceId `json:"id"`
 	Clock  sb.Sources  `json:"clock"`
 	Meta   interface{} `json:"-"`
-	Accept interface{} `json:"-"`
+	Accept *sb.Accept  `json:"accept"`
 }
 
 type Stream interface {
@@ -64,7 +64,7 @@ type Duplex struct {
 	isFirstRead bool
 	tail        bool
 	peerSources sb.Sources
-	peerAccept  interface{}
+	peerAccept  *sb.Accept
 	peerId      sb.SourceId
 	meta        interface{}
 	log         *logrus.Entry

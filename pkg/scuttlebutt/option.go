@@ -8,7 +8,7 @@ func WithId(id SourceId) Option {
 	}
 }
 
-func WithAccept(accept interface{}) Option {
+func WithAccept(accept *Accept) Option {
 	return func(scuttlebutt *Scuttlebutt) {
 		scuttlebutt.Accept = accept
 	}

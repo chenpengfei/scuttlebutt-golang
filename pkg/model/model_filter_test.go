@@ -11,7 +11,7 @@ import (
 func TestModelFilter(t *testing.T) {
 	assert := assert.New(t)
 
-	accept := &Accept{
+	accept := &scuttlebutt.Accept{
 		Blacklist: nil,
 		Whitelist: []string{"foo"},
 	}
@@ -47,8 +47,8 @@ func TestModelFilter(t *testing.T) {
 		a.Set(ignored.key, expected.valueA)
 
 		sb.On("synced", func(data interface{}) {
-			assert.Equal(b.Get(expected.key, false), expected.valueA)
-			assert.Equal(b.Get(ignored.key, false), nil)
+			assert.Equal(expected.valueA, b.Get(expected.key, false))
+			assert.Equal(nil, b.Get(ignored.key, false))
 		})
 
 		duplex.Link(sa, sb)
@@ -67,10 +67,10 @@ func TestModelFilter(t *testing.T) {
 		time.Sleep(time.Second)
 		a.Set(ignored.key, expected.valueA)
 
-		assert.Equal(a.Get(expected.key, false), expected.valueA)
-		assert.Equal(a.Get(ignored.key, false), expected.valueA)
+		assert.Equal(expected.valueA, a.Get(expected.key, false))
+		assert.Equal(expected.valueA, a.Get(ignored.key, false))
 
-		assert.Equal(b.Get(expected.key, false), expected.valueA)
-		assert.Equal(b.Get(ignored.key, false), nil)
+		assert.Equal(expected.valueA, b.Get(expected.key, false))
+		assert.Equal(nil, b.Get(ignored.key, false))
 	})
 }

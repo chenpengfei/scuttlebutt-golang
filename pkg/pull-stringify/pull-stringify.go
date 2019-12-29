@@ -76,8 +76,9 @@ func (s *PullStringify) Serialize() pull.Through {
 						if f {
 							prefix = s.open
 						}
-						cb(nil, prefix+s.buf.String()+s.suffix)
+						val := prefix + s.buf.String() + s.suffix
 						s.buf.Reset()
+						cb(nil, val)
 					}
 				}
 			})

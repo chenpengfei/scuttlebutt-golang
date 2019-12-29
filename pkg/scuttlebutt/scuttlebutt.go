@@ -55,18 +55,18 @@ type Sign func(update *Update) (string, error)
 type Verify func(update *Update) bool
 type IsAccepted func(update *Update) bool
 
-type ModelAccept interface {
-	Whitelist() []string
-	Blacklist() []string
+type Accept struct {
+	Whitelist []string `json:"whitelist"`
+	Blacklist []string `json:"blacklist"`
 }
 
 type Protocol interface {
-	IsAccepted(peerAccept interface{}, update *Update) bool
+	IsAccepted(peerAccept *Accept, update *Update) bool
 	// 更新己方消息
 	ApplyUpdates(update *Update) bool
 	// 根据对端传来的 clock，计算出来的 delta。而 delta 是 Update 集合
 	// 每个 stream 上记录对端传来的 clock，并且会随着后续从 stream 收到的 Update 不断更新
-	History(peerSources Sources, accept interface{}) []*Update
+	History(peerSources Sources, accept *Accept) []*Update
 }
 
 type Scuttlebutt struct {
@@ -74,7 +74,7 @@ type Scuttlebutt struct {
 	*event.Emitter
 
 	id      SourceId
-	Accept  interface{}
+	Accept  *Accept
 	Sources Sources
 
 	sign     Sign

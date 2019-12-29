@@ -4,7 +4,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestCreateId(t *testing.T) {
@@ -63,22 +62,4 @@ func TestSort(t *testing.T) {
 type Any struct {
 	Name  string
 	Speed int
-}
-
-func TestUpdate_Sign(t *testing.T) {
-	u := &Update{
-		SourceId:  "XX",
-		Timestamp: Timestamp(time.Now().Second()),
-		Data: Any{
-			Name:  "lixiang",
-			Speed: 120,
-		},
-	}
-
-	digest, err := Sha256Sign(u)
-	assert.Nil(t, err)
-	u.Digest = digest
-	assert.True(t, Sha256Verify(u))
-	u.Digest = "digest"
-	assert.False(t, Sha256Verify(u))
 }

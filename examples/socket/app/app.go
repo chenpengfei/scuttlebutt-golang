@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	cw "github.com/chenpengfei/context-wrapper"
-	rc "github.com/chenpengfei/reconnect-core"
+	reconnect "github.com/chenpengfei/reconnect-core"
 	"github.com/chenpengfei/scuttlebutt-golang/pkg/duplex"
 	"github.com/chenpengfei/scuttlebutt-golang/pkg/model"
 	"github.com/chenpengfei/scuttlebutt-golang/pkg/socket"
 	log "github.com/sirupsen/logrus"
+	"net"
 	"time"
 )
 
@@ -16,8 +17,8 @@ func main() {
 
 	address := "localhost:9989"
 
-	re := rc.NewReconnection(address)
-	re.OnConnect(func(conn *rc.Reconnection) {
+	rc := reconnect.NewReconnection(ctx)
+	rc.OnConnect(func(conn net.Conn) {
 		socket := socket.NewDuplex(conn, nil)
 
 		log.WithField("address", address).Info("connected to cloud")
@@ -38,12 +39,13 @@ func main() {
 			log.Error("connection has broken")
 		})
 	})
-	re.OnNotify(func(err error, duration time.Duration) {
+	rc.OnNotify(func(err error, duration time.Duration) {
 		log.WithError(err).WithField("next", duration).Error("retry...")
 	})
-	re.OnError(func(err error) {
+	rc.OnError(func(err error) {
 		log.WithError(err).Error("connection has broken")
 	})
+	rc.Dial("tcp", address)
 
 	<-ctx.Done()
 

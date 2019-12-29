@@ -1,5 +1,7 @@
 github.com/chenpengfei/backoff v1.0.0 h1:SUsc0inJnXo9dQ/kKu+GUZ0wETUvaLNKcs6UfneVbv0=
 github.com/chenpengfei/backoff v1.0.0/go.mod h1:SOVQPtApnwLtzjazHUqbVigyAEdFqeAt191iN7qzfY0=
+github.com/chenpengfei/backoff v1.2.0 h1:0Bc1yq4e7VHHRBEiqQCLIDWGJnvjTn9xtPYE0YKVAM8=
+github.com/chenpengfei/backoff v1.2.0/go.mod h1:6fuM/6iv79z1Jhj/oKuSkt4HcTR650fmd7IWOvnBUoo=
 github.com/chenpengfei/context-wrapper v1.0.0 h1:YI4YMjRpzQNn014mKi6c+q9qPhZlzNMJPzOXnO6uB74=
 github.com/chenpengfei/context-wrapper v1.0.0/go.mod h1:Q5ERp8beMjXXpFeWeXhZvHqm+ZPrpOrxeNujwoYBLZ4=
 github.com/chenpengfei/events v1.2.0 h1:QpAPiPYEJNBbeNTsSEHHtUFtkmuiCcDo51ZPFVbWPdo=
@@ -8,11 +10,14 @@ github.com/chenpengfei/pull-stream v1.2.1 h1:F6ka0P83enLqiAlbfsEd2iDf+yEMzxJGu4k
 github.com/chenpengfei/pull-stream v1.2.1/go.mod h1:KFPv9qpgqi1xMeFBCfFKgtEe6TGqA+ZM0IP0Q/Z6Pds=
 github.com/chenpengfei/reconnect-core v1.0.0 h1:mP8qpjRMrpIM/91bMFMTbd1UPPBpqUFSsP/vLLut9v8=
 github.com/chenpengfei/reconnect-core v1.0.0/go.mod h1:vO8QaJK41KgOPj4WgWqhQqs1OjBE5J1IuikbR+RPPJw=
+github.com/chenpengfei/reconnect-core v1.2.0 h1:keX/OMkIMBA1EcC33Cje28ZXuGI6E3+KtN+xSgImeyg=
+github.com/chenpengfei/reconnect-core v1.2.0/go.mod h1:lVZ3dmouHswU5mfgSBpjPX5Gqq9xczvxlM6hZJm94Wg=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/eapache/queue v1.1.0/go.mod h1:6eCeP0CKFpHLu8blIFXhExK/dRa7WDZfr6jVFPTqq+I=
 github.com/golang/mock v1.3.1/go.mod h1:sBzyDLLjw3U8JLTeZvSv8jJB+tU5PVekmnlKIyFUx0Y=
+github.com/gorilla/websocket v1.4.1/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1 h1:mweAR1A6xJ3oS2pRaGiHgQ4OO8tzTaLawm8vnODuwDk=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
