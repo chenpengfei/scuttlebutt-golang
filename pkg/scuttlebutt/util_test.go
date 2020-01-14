@@ -58,8 +58,3 @@ func TestSort(t *testing.T) {
 	assert.Equal(t, u21, h[1])
 	assert.Equal(t, u22, h[2])
 }
-
-type Any struct {
-	Name  string
-	Speed int
-}

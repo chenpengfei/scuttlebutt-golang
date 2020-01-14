@@ -32,7 +32,7 @@ func NewSyncModel(opts ...sb.Option) *SyncModel {
 
 func (s *SyncModel) IsAccepted(peerAccept *sb.Accept, update *sb.Update) bool {
 	if peerAccept != nil {
-		for k, _ := range update.Data {
+		for k := range update.Data {
 			if peerAccept.Blacklist != nil {
 				for _, b := range peerAccept.Blacklist {
 					if k == b {
