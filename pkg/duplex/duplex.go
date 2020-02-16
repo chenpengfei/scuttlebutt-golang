@@ -109,7 +109,9 @@ func NewDuplex(sb *sb.Scuttlebutt, opts ...Option) *Duplex {
 	duplex.sb = sb
 
 	duplex.onclose = func(err error) {
-		duplex.sb.RemoveListener("_update", duplex.onUpdate)
+		if duplex.readable {
+			duplex.sb.RemoveListener("_update", duplex.onUpdate)
+		}
 		duplex.sb.RemoveListener("dispose", duplex.End)
 		duplex.sb.Streams--
 		duplex.Emit("unstream", duplex.sb.Streams)
