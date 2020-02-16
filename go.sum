@@ -4,8 +4,8 @@ github.com/chenpengfei/backoff v1.2.0 h1:0Bc1yq4e7VHHRBEiqQCLIDWGJnvjTn9xtPYE0YK
 github.com/chenpengfei/backoff v1.2.0/go.mod h1:6fuM/6iv79z1Jhj/oKuSkt4HcTR650fmd7IWOvnBUoo=
 github.com/chenpengfei/context-wrapper v1.0.0 h1:YI4YMjRpzQNn014mKi6c+q9qPhZlzNMJPzOXnO6uB74=
 github.com/chenpengfei/context-wrapper v1.0.0/go.mod h1:Q5ERp8beMjXXpFeWeXhZvHqm+ZPrpOrxeNujwoYBLZ4=
-github.com/chenpengfei/events v1.2.0 h1:QpAPiPYEJNBbeNTsSEHHtUFtkmuiCcDo51ZPFVbWPdo=
-github.com/chenpengfei/events v1.2.0/go.mod h1:ux9kdA3tO6ul8muVzsbaXhF1LhypbEmfcK6agZE96W8=
+github.com/chenpengfei/events v1.2.1 h1:MFA9tIoRNz+aJGc9AtIuCHoM91ZYDeuo/0qBFRC7d70=
+github.com/chenpengfei/events v1.2.1/go.mod h1:ux9kdA3tO6ul8muVzsbaXhF1LhypbEmfcK6agZE96W8=
 github.com/chenpengfei/pull-stream v1.2.1 h1:F6ka0P83enLqiAlbfsEd2iDf+yEMzxJGu4kX3DbFzLw=
 github.com/chenpengfei/pull-stream v1.2.1/go.mod h1:KFPv9qpgqi1xMeFBCfFKgtEe6TGqA+ZM0IP0Q/Z6Pds=
 github.com/chenpengfei/reconnect-core v1.0.0 h1:mP8qpjRMrpIM/91bMFMTbd1UPPBpqUFSsP/vLLut9v8=

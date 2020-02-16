@@ -1,8 +1,6 @@
 package scuttlebutt
 
 import (
-	"bytes"
-	"encoding/json"
 	event "github.com/chenpengfei/events/pkg/emitter"
 	"github.com/chenpengfei/pull-stream/pkg/pull"
 	"github.com/chenpengfei/scuttlebutt-golang/pkg/logger"
@@ -13,68 +11,52 @@ import (
 // 全局唯一
 type SourceId string
 
-// "我"所知道的所有和“我”相连的节点(包括我自己的)的最新时间戳
-// 会随着后续所有 stream 上收到的 Update 来更新
 type Timestamp int64
 
+// "我"所知道的所有和“我”相连的节点(包括我自己的)的最新时间戳
+// 会随着后续所有 stream 上收到的 Update 来更新
 type Sources map[SourceId]Timestamp
 
 // 一次更新
 type Update struct {
-	Data      map[string]interface{} `json:"data"`
-	Timestamp Timestamp              `json:"timestamp"`
-	SourceId  SourceId               `json:"source_id"`
-	From      SourceId               `json:"from"`
-	Digest    string                 `json:"digest"`
-}
-
-//todo.test
-func (u *Update) MarshalJSON() ([]byte, error) {
-	tuple := make([]interface{}, 4)
-	tuple[0] = u.Data
-	tuple[1] = u.Timestamp
-	tuple[2] = u.SourceId
-	tuple[3] = u.From
-
-	var buf bytes.Buffer
-	enc := json.NewEncoder(&buf)
-	enc.SetIndent("", "")
-	err := enc.Encode(tuple)
-	return []byte(buf.String() + "\n"), err
-	//tmp, err := json.Marshal(tuple)
-	//return []byte(string(tmp) + "\n"), err
-}
-
-func (u *Update) UnmarshalJSON(data []byte) error {
-	tuple := []interface{}{&u.Data, &u.Timestamp, &u.SourceId, &u.From}
-	err := json.Unmarshal(data, &tuple)
-	return err
+	Data      [2]interface{} `json:"data"`
+	Timestamp Timestamp      `json:"timestamp"`
+	SourceId  SourceId       `json:"source_id"`
+	From      SourceId       `json:"from"`
+	Digest    string         `json:"digest"`
 }
 
 type Sign func(update *Update) (string, error)
 type Verify func(update *Update) bool
 type IsAccepted func(update *Update) bool
 
-type Accept struct {
+type ModelValueItems int
+
+const (
+	ModelValueItemsKey ModelValueItems = iota
+	ModelValueItemsValue
+)
+
+type ModelAccept struct {
 	Whitelist []string `json:"whitelist"`
 	Blacklist []string `json:"blacklist"`
 }
 
-type Protocol interface {
-	IsAccepted(peerAccept *Accept, update *Update) bool
+type Model interface {
+	IsAccepted(peerAccept *ModelAccept, update *Update) bool
 	// 更新己方消息
 	ApplyUpdates(update *Update) bool
 	// 根据对端传来的 clock，计算出来的 delta。而 delta 是 Update 集合
 	// 每个 stream 上记录对端传来的 clock，并且会随着后续从 stream 收到的 Update 不断更新
-	History(peerSources Sources, accept *Accept) []*Update
+	History(peerSources Sources, accept *ModelAccept) []*Update
 }
 
 type Scuttlebutt struct {
-	Protocol
+	Model
 	*event.Emitter
 
 	id      SourceId
-	Accept  *Accept
+	Accept  *ModelAccept
 	Sources Sources
 
 	sign     Sign
@@ -85,11 +67,11 @@ type Scuttlebutt struct {
 	log *logrus.Entry
 }
 
-func NewScuttlebutt(protocol Protocol, opts ...Option) *Scuttlebutt {
+func NewScuttlebutt(model Model, opts ...Option) *Scuttlebutt {
 	sb := &Scuttlebutt{
-		Protocol: protocol,
-		Sources:  make(map[SourceId]Timestamp),
-		Emitter:  event.NewEmitter(),
+		Model:   model,
+		Sources: make(map[SourceId]Timestamp),
+		Emitter: event.NewEmitter(),
 	}
 
 	for _, opt := range opts {
@@ -112,7 +94,7 @@ func NewScuttlebutt(protocol Protocol, opts ...Option) *Scuttlebutt {
 	return sb
 }
 
-func (sb *Scuttlebutt) IsAccepted(peerAccept interface{}, update *Update) bool {
+func (sb *Scuttlebutt) IsAccepted(peerAccept *ModelAccept, update *Update) bool {
 	panic("method(IsAccepted) must be implemented")
 }
 
@@ -120,7 +102,7 @@ func (sb *Scuttlebutt) ApplyUpdates(update *Update) bool {
 	panic("method(applyUpdate) must be implemented")
 }
 
-func (sb *Scuttlebutt) History(peerSources Sources, accept interface{}) []*Update {
+func (sb *Scuttlebutt) History(peerSources Sources, accept *ModelAccept) []*Update {
 	panic("method(history) must be implemented")
 }
 
@@ -175,7 +157,7 @@ func (sb *Scuttlebutt) didVerification(verified bool, update *Update) bool {
 
 	// emit '_update' event to notify every streams on this SB
 	//todo.异步 ？
-	r := sb.Protocol.ApplyUpdates(update)
+	r := sb.Model.ApplyUpdates(update)
 	if r {
 		sb.Emit("_update", update)
 		sb.log.WithField("total_listeners", sb.ListenerCount("_update")).Debug("applied 'update' and fired ⚡_update")
@@ -183,7 +165,7 @@ func (sb *Scuttlebutt) didVerification(verified bool, update *Update) bool {
 	return r
 }
 
-func (sb *Scuttlebutt) LocalUpdate(any map[string]interface{}) {
+func (sb *Scuttlebutt) LocalUpdate(any [2]interface{}) {
 	sb.Update(&Update{
 		SourceId:  sb.id,
 		Timestamp: Timestamp(time.Now().UnixNano() / int64(time.Millisecond)),

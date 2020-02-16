@@ -8,7 +8,7 @@ func WithId(id SourceId) Option {
 	}
 }
 
-func WithAccept(accept *Accept) Option {
+func WithAccept(accept *ModelAccept) Option {
 	return func(scuttlebutt *Scuttlebutt) {
 		scuttlebutt.Accept = accept
 	}

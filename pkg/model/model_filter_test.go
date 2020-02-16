@@ -11,7 +11,7 @@ import (
 func TestModelFilter(t *testing.T) {
 	assert := assert.New(t)
 
-	accept := &scuttlebutt.Accept{
+	accept := &scuttlebutt.ModelAccept{
 		Blacklist: nil,
 		Whitelist: []string{"foo"},
 	}

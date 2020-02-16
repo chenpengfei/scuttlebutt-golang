@@ -33,10 +33,10 @@ func validate(update *sb.Update) bool {
 }
 
 type Outgoing struct {
-	Id     sb.SourceId `json:"id"`
-	Clock  sb.Sources  `json:"clock"`
-	Meta   interface{} `json:"-"`
-	Accept *sb.Accept  `json:"accept"`
+	Id     sb.SourceId     `json:"id"`
+	Clock  sb.Sources      `json:"clock"`
+	Meta   interface{}     `json:"-"`
+	Accept *sb.ModelAccept `json:"accept"`
 }
 
 type Stream interface {
@@ -64,7 +64,7 @@ type Duplex struct {
 	isFirstRead bool
 	tail        bool
 	peerSources sb.Sources
-	peerAccept  *sb.Accept
+	peerAccept  *sb.ModelAccept
 	peerId      sb.SourceId
 	meta        interface{}
 	log         *logrus.Entry
@@ -197,7 +197,7 @@ func (d *Duplex) onUpdate(data interface{}) {
 
 	isAccepted := true
 	if d.peerAccept != nil {
-		isAccepted = d.sb.Protocol.IsAccepted(d.peerAccept, update)
+		isAccepted = d.sb.Model.IsAccepted(d.peerAccept, update)
 	}
 
 	if !isAccepted {
@@ -393,7 +393,7 @@ func (d *Duplex) start(incoming *Outgoing) {
 	if d.readable {
 		// call this.history to calculate the delta between peers
 		// AsyncScuttlebutt
-		history := d.sb.Protocol.History(d.peerSources, d.peerAccept)
+		history := d.sb.Model.History(d.peerSources, d.peerAccept)
 		for _, h := range history {
 			h.From = d.sb.Id()
 			d.push(h, false)
