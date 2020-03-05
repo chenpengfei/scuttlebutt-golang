@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/chenpengfei/pull-stream/pkg/pull"
+	"strings"
 )
 
 type PullStringify struct {
@@ -23,7 +24,7 @@ func NewPullStringify(opts ...Option) *PullStringify {
 	s := &PullStringify{
 		open:   "",
 		prefix: "",
-		suffix: "\n\n",
+		suffix: "\n",
 		close:  "",
 		indent: "  ",
 	}
@@ -76,7 +77,11 @@ func (s *PullStringify) Serialize() pull.Through {
 						if f {
 							prefix = s.open
 						}
-						val := prefix + s.buf.String() + s.suffix
+						var b strings.Builder
+						b.WriteString(prefix)
+						b.Write(s.buf.Bytes()[:s.buf.Len()-1])
+						b.WriteString(s.suffix)
+						val := b.String()
 						s.buf.Reset()
 						cb(nil, val)
 					}
